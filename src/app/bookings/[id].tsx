@@ -2,9 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { CarUnavailableError } from '@/api/types';
+import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,14 +13,12 @@ import { Spacing } from '@/constants/theme';
 import { calculatePrice } from '@/domain/pricing';
 import { useBooking, useCancelBooking, useUpdateBooking } from '@/hooks/use-bookings';
 import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
-import { useTheme } from '@/hooks/use-theme';
 import { useIsOnline } from '@/offline/connectivity';
 import { requestSync } from '@/offline/syncManager';
 import { bookingDatesSchema, type BookingDatesValues } from '@/validation/booking';
 
 export default function BookingDetailScreen() {
   const { id, confirmed } = useLocalSearchParams<{ id: string; confirmed?: string }>();
-  const theme = useTheme();
   const { data: booking, isLoading } = useBooking(id);
   const { data: car } = useCar(booking?.carId);
   const { data: insuranceOptions = [] } = useInsurance();
@@ -142,29 +141,19 @@ export default function BookingDetailScreen() {
             {booking.startDate.slice(0, 10)} – {booking.endDate.slice(0, 10)}
           </ThemedText>
         ) : (
-          <ThemedView style={styles.editRow}>
+          <ThemedView style={styles.editFields}>
             <Controller
               control={control}
               name="startDate"
               render={({ field }) => (
-                <TextInput
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  style={[styles.input, styles.flex1, { color: theme.text, borderColor: theme.backgroundSelected }]}
-                  accessibilityLabel="Pick-up date"
-                />
+                <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Pick-up date" />
               )}
             />
             <Controller
               control={control}
               name="endDate"
               render={({ field }) => (
-                <TextInput
-                  value={field.value}
-                  onChangeText={field.onChange}
-                  style={[styles.input, styles.flex1, { color: theme.text, borderColor: theme.backgroundSelected }]}
-                  accessibilityLabel="Return date"
-                />
+                <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Return date" />
               )}
             />
           </ThemedView>
@@ -224,19 +213,8 @@ const styles = StyleSheet.create({
     padding: Spacing.three,
     gap: Spacing.one,
   },
-  editRow: {
-    flexDirection: 'row',
+  editFields: {
     gap: Spacing.two,
-  },
-  flex1: {
-    flex: 1,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
   },
   actions: {
     flexDirection: 'row',

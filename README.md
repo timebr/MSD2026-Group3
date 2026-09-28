@@ -80,9 +80,16 @@ Caching rules:
 
 ## Status
 
-Car list with location and type filters and price sort, car details, booking
-form with live price breakdown and availability check, mock checkout, and
+Car list with location and type filters, price sort and per-day price ranges,
+car details, booking form with native date pickers, live price breakdown and
+availability check, mock checkout, and
 self-service booking management (view/modify/cancel) work against the JSON
 fixtures with local persistence and a sync-status indicator. Not yet
-implemented: registration (FR9), a separate search screen with dates (S2),
-more filters (FR7), return reminders (FR10), and the real backend.
+implemented: a separate search screen with dates (S2), more filters (FR7),
+return reminders (FR10), and the real backend.
+
+Accounts (FR9): on launch the app offers "Create account", "Log in" or
+"Continue as guest". Guests can browse; paying for a booking or opening My
+bookings asks them to log in or sign up first. Accounts are stored on the
+device only (`src/api/local/authRepository.ts`, salted SHA-256 password
+hashes) until there is a backend.

@@ -1,4 +1,4 @@
-import { Link, Stack } from 'expo-router';
+import { Link, Redirect, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,20 +9,28 @@ import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useCars, useLocations } from '@/hooks/use-cars';
+import { useAuth } from '@/hooks/use-auth';
+import { useCars, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
 
 const CAR_TYPES: CarType[] = ['city', 'suv', 'estate', 'van', 'luxury'];
 const TYPE_OPTIONS = CAR_TYPES.map((carType) => ({ value: carType, label: carType }));
 
 export default function CarListScreen() {
+  const { user, isGuest } = useAuth();
   const { data: locations = [] } = useLocations();
+  const { data: insuranceOptions = [] } = useInsurance();
   const [locationId, setLocationId] = useState<string | undefined>(undefined);
   const [type, setType] = useState<CarType | undefined>(undefined);
   const [sort, setSort] = useState<CarSort>('price-asc');
 
   const filters = useMemo(() => ({ locationId, type }), [locationId, type]);
   const { data: cars, isLoading, isError } = useCars(filters, sort);
+
+  // First launch without a login or guest choice: show the welcome screen (S3).
+  if (!user && !isGuest) {
+    return <Redirect href="/welcome" />;
+  }
 
   return (
     <ThemedView style={styles.container}>
@@ -75,7 +83,7 @@ export default function CarListScreen() {
         <FlatList
           data={cars}
           keyExtractor={(car) => car.id}
-          renderItem={({ item }) => <CarCard car={item} />}
+          renderItem={({ item }) => <CarCard car={item} insuranceOptions={insuranceOptions} />}
           contentContainerStyle={styles.list}
           ListEmptyComponent={!isLoading ? <ThemedText type="small">No cars match those filters.</ThemedText> : null}
         />

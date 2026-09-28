@@ -1,4 +1,4 @@
-import { calculatePrice, ONE_WAY_FEE, rentalDays } from '@/domain/pricing';
+import { calculatePrice, dailyPriceRange, formatDailyRange, ONE_WAY_FEE, rentalDays } from '@/domain/pricing';
 
 const car = { pricePerDay: 50 };
 
@@ -38,5 +38,18 @@ describe('calculatePrice', () => {
 describe('rentalDays', () => {
   it('charges at least one day', () => {
     expect(rentalDays('2026-10-01', '2026-10-01')).toBe(1);
+  });
+});
+
+describe('dailyPriceRange', () => {
+  it('goes from the car alone to the car with the most expensive insurance', () => {
+    expect(dailyPriceRange({ pricePerDay: 50 }, [{ pricePerDay: 0 }, { pricePerDay: 15 }])).toEqual({
+      min: 50,
+      max: 65,
+    });
+  });
+
+  it('is a single price when there is no paid insurance', () => {
+    expect(formatDailyRange(dailyPriceRange({ pricePerDay: 50 }, []))).toBe('50 DKK / day');
   });
 });

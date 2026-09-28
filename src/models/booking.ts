@@ -27,6 +27,7 @@ export interface Payment {
 
 export interface Booking {
   id: string;
+  userId: string;
   carId: string;
   pickupLocationId: string;
   dropoffLocationId: string;
@@ -43,10 +44,18 @@ export interface Booking {
 
 export type CreateBookingInput = Pick<
   Booking,
-  'carId' | 'pickupLocationId' | 'dropoffLocationId' | 'startDate' | 'endDate' | 'insuranceId' | 'price' | 'payment'
+  | 'userId'
+  | 'carId'
+  | 'pickupLocationId'
+  | 'dropoffLocationId'
+  | 'startDate'
+  | 'endDate'
+  | 'insuranceId'
+  | 'price'
+  | 'payment'
 >;
 
 export type UpdateBookingInput = Partial<Pick<Booking, 'startDate' | 'endDate' | 'price'>>;
 
-/** A booking before checkout: everything except the payment. */
-export type BookingDraft = Omit<CreateBookingInput, 'payment'>;
+/** A booking before checkout: the user and payment are added at checkout. */
+export type BookingDraft = Omit<CreateBookingInput, 'userId' | 'payment'>;

@@ -9,6 +9,7 @@ import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useAuth } from '@/hooks/use-auth';
 import { useCreateBooking } from '@/hooks/use-bookings';
 import { useTheme } from '@/hooks/use-theme';
 import type { BookingDraft } from '@/models/booking';
@@ -17,6 +18,7 @@ import { paymentFormSchema, type PaymentFormValues } from '@/validation/payment'
 export default function CheckoutScreen() {
   const { draft } = useLocalSearchParams<{ draft: string }>();
   const theme = useTheme();
+  const { user } = useAuth();
   const createBooking = useCreateBooking();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
@@ -55,9 +57,15 @@ export default function CheckoutScreen() {
   // the booking stores method, amount and status like the data model's Payment.
   const onSubmit = async (_card: PaymentFormValues) => {
     setSubmitError(null);
+    if (!user) {
+      // Guests can browse, but a booking needs an account ("Tap Pay + not logged in" → S3).
+      router.push({ pathname: '/login', params: { mode: 'signup' } });
+      return;
+    }
     try {
       const booking = await createBooking.mutateAsync({
         ...bookingDraft,
+        userId: user.id,
         payment: { method: 'card', amount: bookingDraft.price.totalPrice, status: 'paid' },
       });
       router.replace({ pathname: '/bookings/[id]', params: { id: booking.id, confirmed: '1' } });
@@ -73,6 +81,14 @@ export default function CheckoutScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <PriceSummary price={bookingDraft.price} />
+
+      {!user && (
+        <ThemedView type="backgroundElement" style={styles.notice}>
+          <ThemedText type="small">
+            You&apos;re browsing as a guest. You&apos;ll be asked to log in or create an account when you pay.
+          </ThemedText>
+        </ThemedView>
+      )}
 
       <ThemedView style={styles.field}>
         <ThemedText type="smallBold">Cardholder name</ThemedText>
@@ -184,10 +200,12 @@ export default function CheckoutScreen() {
         onPress={handleSubmit(onSubmit)}
         disabled={createBooking.isPending}
         accessibilityRole="button"
-        accessibilityLabel="Confirm and pay"
+        accessibilityLabel={user ? 'Confirm and pay' : 'Log in to pay'}
       >
         <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">{createBooking.isPending ? 'Processing…' : 'Confirm and pay'}</ThemedText>
+          <ThemedText type="smallBold">
+            {createBooking.isPending ? 'Processing…' : user ? 'Confirm and pay' : 'Log in to pay'}
+          </ThemedText>
         </ThemedView>
       </Pressable>
     </ScrollView>
@@ -204,6 +222,10 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     gap: Spacing.three,
+  },
+  notice: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
   },
   field: {
     gap: Spacing.one,

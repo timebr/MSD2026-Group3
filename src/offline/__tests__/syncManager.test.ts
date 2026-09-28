@@ -5,6 +5,7 @@ import type { CreateBookingInput } from '@/models/booking';
 import { setSimulateSyncFailure, syncPendingBookings } from '@/offline/syncManager';
 
 const input: CreateBookingInput = {
+  userId: 'user-1',
   carId: 'car-1',
   pickupLocationId: 'loc-a',
   dropoffLocationId: 'loc-a',

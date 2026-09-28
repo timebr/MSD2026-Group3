@@ -2,9 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { Pressable, ScrollView, StyleSheet } from 'react-native';
 
 import { ChipGroup } from '@/components/chip-group';
+import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -12,7 +13,6 @@ import { Spacing } from '@/constants/theme';
 import { calculatePrice } from '@/domain/pricing';
 import { checkAvailability } from '@/hooks/use-bookings';
 import { useCar, useInsurance, useLocations } from '@/hooks/use-cars';
-import { useTheme } from '@/hooks/use-theme';
 import type { BookingDraft } from '@/models/booking';
 import type { Car } from '@/models/car';
 import type { Insurance } from '@/models/insurance';
@@ -53,7 +53,6 @@ function BookingForm({
   locations: Location[];
   insuranceOptions: Insurance[];
 }) {
-  const theme = useTheme();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const locationOptions = locations.map((location) => ({ value: location.id, label: location.name }));
 
@@ -94,22 +93,13 @@ function BookingForm({
     router.push({ pathname: '/checkout', params: { draft: JSON.stringify(draft) } });
   };
 
-  const dateInput = (name: 'startDate' | 'endDate', label: string, placeholder: string) => (
+  const dateInput = (name: 'startDate' | 'endDate', label: string) => (
     <ThemedView style={styles.field}>
-      <ThemedText type="smallBold">{label} (YYYY-MM-DD)</ThemedText>
+      <ThemedText type="smallBold">{label}</ThemedText>
       <Controller
         control={control}
         name={name}
-        render={({ field }) => (
-          <TextInput
-            value={field.value}
-            onChangeText={field.onChange}
-            placeholder={placeholder}
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-            accessibilityLabel={label}
-          />
-        )}
+        render={({ field }) => <DateField value={field.value} onChange={field.onChange} accessibilityLabel={label} />}
       />
       {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
     </ThemedView>
@@ -155,8 +145,8 @@ function BookingForm({
         {errors.dropoffLocationId && <ThemedText type="small">{errors.dropoffLocationId.message}</ThemedText>}
       </ThemedView>
 
-      {dateInput('startDate', 'Pick-up date', '2026-10-01')}
-      {dateInput('endDate', 'Return date', '2026-10-05')}
+      {dateInput('startDate', 'Pick-up date')}
+      {dateInput('endDate', 'Return date')}
 
       <ThemedView style={styles.field}>
         <ThemedText type="smallBold">Insurance</ThemedText>
@@ -207,13 +197,6 @@ const styles = StyleSheet.create({
   },
   field: {
     gap: Spacing.one,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
   },
   submitButton: {
     borderRadius: Spacing.three,

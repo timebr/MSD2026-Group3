@@ -5,6 +5,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { dailyPriceRange, formatDailyRange } from '@/domain/pricing';
 import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
 
 export default function CarDetailScreen() {
@@ -62,7 +63,12 @@ export default function CarDetailScreen() {
           ))}
         </ThemedView>
 
-        <ThemedText type="subtitle">{car.pricePerDay} DKK / day</ThemedText>
+        <ThemedView style={styles.priceBlock}>
+          <ThemedText type="subtitle">{formatDailyRange(dailyPriceRange(car, insuranceOptions))}</ThemedText>
+          <ThemedText type="small" themeColor="textSecondary">
+            From the car alone to the car with full insurance. A one-way fee applies if you return it elsewhere.
+          </ThemedText>
+        </ThemedView>
 
         <Link href={{ pathname: '/booking/[carId]', params: { carId: car.id } }} asChild>
           <Pressable accessibilityRole="button" accessibilityLabel="Book this car">
@@ -98,6 +104,9 @@ const styles = StyleSheet.create({
   insuranceRow: {
     gap: Spacing.half,
     marginTop: Spacing.one,
+  },
+  priceBlock: {
+    gap: Spacing.half,
   },
   bookButton: {
     borderRadius: Spacing.three,

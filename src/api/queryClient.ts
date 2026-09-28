@@ -60,7 +60,7 @@ export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   maxAge: DAY_MS,
   // Bump whenever the shape of cached data changes (e.g. a field on Car), so
   // old-shaped data from a previous app version isn't restored.
-  buster: 'v2',
+  buster: 'v3',
   dehydrateOptions: {
     shouldDehydrateQuery: (query) => query.state.status === 'success' && !isBookingQuery(query),
   },

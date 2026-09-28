@@ -1,15 +1,29 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 import { bookingRepository } from '@/api';
 import { bookingKeys } from '@/api/queryKeys';
+import { useAuth } from '@/hooks/use-auth';
 import type { CreateBookingInput, UpdateBookingInput } from '@/models/booking';
 import { requestSync } from '@/offline/syncManager';
 
-export function useBookings() {
+/** Every booking stored on this device, for sync. */
+function useAllBookings() {
   return useQuery({
     queryKey: bookingKeys.list,
     queryFn: () => bookingRepository.listBookings(),
   });
+}
+
+/** The logged-in user's bookings (S7); empty for guests. */
+export function useMyBookings() {
+  const { user } = useAuth();
+  const query = useAllBookings();
+  const data = useMemo(
+    () => (user ? query.data?.filter((booking) => booking.userId === user.id) : []),
+    [query.data, user],
+  );
+  return { ...query, data };
 }
 
 export function useBooking(id: string | undefined) {
@@ -27,7 +41,7 @@ export function checkAvailability(carId: string, startDate: string, endDate: str
 
 /** Pending/failed counts for the sync-status indicator (NFR3). */
 export function useSyncStatus(): { pending: number; failed: number } {
-  const { data: bookings = [] } = useBookings();
+  const { data: bookings = [] } = useAllBookings();
   return {
     pending: bookings.filter((b) => b.syncState === 'pending').length,
     failed: bookings.filter((b) => b.syncState === 'failed').length,

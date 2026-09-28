@@ -5,6 +5,7 @@ import { CarUnavailableError } from '@/api/types';
 import type { CreateBookingInput } from '@/models/booking';
 
 const input: CreateBookingInput = {
+  userId: 'user-1',
   carId: 'car-1',
   pickupLocationId: 'loc-a',
   dropoffLocationId: 'loc-a',
