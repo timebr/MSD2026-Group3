@@ -4,6 +4,7 @@ import type { Booking } from '@/models/booking';
 function booking(overrides: Partial<Booking>): Booking {
   return {
     id: 'b1',
+    userId: 'user-1',
     carId: 'car-1',
     pickupLocationId: 'loc-a',
     dropoffLocationId: 'loc-a',

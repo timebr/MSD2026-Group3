@@ -5,9 +5,11 @@ import { Pressable, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { dailyPriceRange, formatDailyRange } from '@/domain/pricing';
 import type { Car } from '@/models/car';
+import type { Insurance } from '@/models/insurance';
 
-export function CarCard({ car }: { car: Car }) {
+export function CarCard({ car, insuranceOptions }: { car: Car; insuranceOptions: Insurance[] }) {
   return (
     <Link href={{ pathname: '/car/[id]', params: { id: car.id } }} asChild>
       <Pressable accessibilityRole="button" accessibilityLabel={`View details for ${car.brand} ${car.model}`}>
@@ -20,7 +22,7 @@ export function CarCard({ car }: { car: Car }) {
             <ThemedText type="small" themeColor="textSecondary">
               {car.type} · {car.fuelType} · {car.transmission} · {car.seats} seats
             </ThemedText>
-            <ThemedText type="smallBold">{`${car.pricePerDay} DKK / day`}</ThemedText>
+            <ThemedText type="smallBold">{formatDailyRange(dailyPriceRange(car, insuranceOptions))}</ThemedText>
           </ThemedView>
         </ThemedView>
       </Pressable>

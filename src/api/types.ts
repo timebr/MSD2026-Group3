@@ -2,6 +2,7 @@ import type { Booking, CreateBookingInput, UpdateBookingInput } from '@/models/b
 import type { Car, CarFilters, CarSort } from '@/models/car';
 import type { Insurance } from '@/models/insurance';
 import type { Location } from '@/models/location';
+import type { User } from '@/models/user';
 
 /**
  * Data-source-agnostic contract for reading the catalog (cars and the
@@ -43,4 +44,32 @@ export interface BookingRepository {
   /** @throws CarUnavailableError */
   updateBooking(id: string, patch: UpdateBookingInput): Promise<Booking>;
   cancelBooking(id: string): Promise<Booking>;
+}
+
+export class EmailTakenError extends Error {
+  constructor() {
+    super('An account with this email already exists.');
+    this.name = 'EmailTakenError';
+  }
+}
+
+export class InvalidCredentialsError extends Error {
+  constructor() {
+    super('Wrong email or password.');
+    this.name = 'InvalidCredentialsError';
+  }
+}
+
+/**
+ * Accounts (FR9). Today they live on the device only; a backend would
+ * implement the same interface.
+ */
+export interface AuthRepository {
+  /** The logged-in user, or null when nobody is logged in. */
+  currentUser(): Promise<User | null>;
+  /** @throws EmailTakenError */
+  signUp(input: { name: string; email: string; password: string }): Promise<User>;
+  /** @throws InvalidCredentialsError */
+  logIn(input: { email: string; password: string }): Promise<User>;
+  logOut(): Promise<void>;
 }

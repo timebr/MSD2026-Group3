@@ -7,6 +7,7 @@ import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { persistOptions, queryClient } from '@/api/queryClient';
+import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { useAutoSync } from '@/offline/syncManager';
 
 SplashScreen.preventAutoHideAsync();
@@ -14,13 +15,24 @@ SplashScreen.preventAutoHideAsync();
 function AppShell() {
   // Kicks off a sync pass on launch and whenever connectivity returns (NFR2).
   useAutoSync();
+  const { ready } = useAuth();
 
+  // Keep the splash screen up until we know whether someone is logged in, so
+  // the welcome screen doesn't flash for returning users.
   useEffect(() => {
-    SplashScreen.hideAsync();
-  }, []);
+    if (ready) {
+      SplashScreen.hideAsync();
+    }
+  }, [ready]);
+
+  if (!ready) {
+    return null;
+  }
 
   return (
     <Stack screenOptions={{ headerTitleAlign: 'center' }}>
+      <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      <Stack.Screen name="login" options={{ title: 'Account' }} />
       <Stack.Screen name="index" options={{ title: 'Available cars' }} />
       <Stack.Screen name="car/[id]" options={{ title: 'Car details' }} />
       <Stack.Screen name="booking/[carId]" options={{ title: 'Book this car' }} />
@@ -38,7 +50,9 @@ export default function RootLayout() {
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <SafeAreaProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <AppShell />
+          <AuthProvider>
+            <AppShell />
+          </AuthProvider>
         </ThemeProvider>
       </SafeAreaProvider>
     </PersistQueryClientProvider>

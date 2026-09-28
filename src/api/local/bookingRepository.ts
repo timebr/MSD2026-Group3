@@ -5,7 +5,7 @@ import { isCarAvailable } from '@/domain/availability';
 import type { Booking, CreateBookingInput, SyncState, UpdateBookingInput } from '@/models/booking';
 import { generateId } from '@/utils/id';
 
-const STORAGE_KEY = 'bookings:v2';
+const STORAGE_KEY = 'bookings:v3';
 
 async function readAll(): Promise<Booking[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);

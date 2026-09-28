@@ -29,3 +29,19 @@ export function calculatePrice(params: {
   const fees = params.pickupLocationId === params.dropoffLocationId ? 0 : ONE_WAY_FEE;
   return { days, basePrice, insuranceCost, fees, totalPrice: basePrice + insuranceCost + fees };
 }
+
+/**
+ * Per-day price range shown before dates are chosen: from the car alone to the
+ * car with the most expensive insurance (FE#2: no surprises at checkout).
+ */
+export function dailyPriceRange(
+  car: Pick<Car, 'pricePerDay'>,
+  insuranceOptions: Pick<Insurance, 'pricePerDay'>[],
+): { min: number; max: number } {
+  const maxInsurance = Math.max(0, ...insuranceOptions.map((option) => option.pricePerDay));
+  return { min: car.pricePerDay, max: car.pricePerDay + maxInsurance };
+}
+
+export function formatDailyRange(range: { min: number; max: number }): string {
+  return range.min === range.max ? `${range.min} DKK / day` : `${range.min}–${range.max} DKK / day`;
+}

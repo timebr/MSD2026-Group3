@@ -27,7 +27,7 @@ src/app/        Screens, Expo Router file-based routes (stack navigation)
 src/hooks/      React Query hooks (use-cars, use-bookings) + UI hooks
 src/api/        Repository interfaces (types.ts) and implementations
   json/         CarRepository backed by the fixtures in src/data (dummy data)
-  local/        BookingRepository backed by AsyncStorage (local-first)
+  local/        BookingRepository and AuthRepository backed by AsyncStorage
 src/domain/     Pure business rules (pricing, availability), no React or storage
 src/offline/    Connectivity (NetInfo) + booking sync manager (NFR2/NFR3)
 src/validation/ zod schemas for the booking and payment forms (NFR5)
@@ -48,7 +48,10 @@ NFR1) → repository from `src/api/index.ts` → data source.
   write the bookings list anywhere else.
 - Bookings are always written locally first and synced by
   `src/offline/syncManager.ts`; the UI shows sync state (pending/failed/synced).
-- Store only what the data model needs: no card details on bookings.
+- Store only what the data model needs: no card details on bookings, no plain
+  passwords (only salted hashes).
+- Who is logged in comes from `useAuth()` (`src/hooks/use-auth.tsx`). Guests
+  may browse; creating a booking always needs a logged-in user.
 - Bump the `buster` in `src/api/queryClient.ts` when a cached type changes shape.
 
 ## Conventions

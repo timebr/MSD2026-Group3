@@ -1,4 +1,4 @@
-import { Link } from 'expo-router';
+import { Link, router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Switch } from 'react-native';
 
@@ -6,7 +6,8 @@ import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useBookings } from '@/hooks/use-bookings';
+import { useAuth } from '@/hooks/use-auth';
+import { useMyBookings } from '@/hooks/use-bookings';
 import { useLocationName } from '@/hooks/use-cars';
 import type { Booking } from '@/models/booking';
 import { isSimulatingSyncFailure, setSimulateSyncFailure } from '@/offline/syncManager';
@@ -38,11 +39,39 @@ function SimulateFailureToggle() {
 }
 
 export default function BookingsListScreen() {
-  const { data: bookings, isLoading } = useBookings();
+  const { user, logOut } = useAuth();
+  const { data: bookings, isLoading } = useMyBookings();
   const locationName = useLocationName();
+
+  if (!user) {
+    // "Tap My Bookings + not logged in" → S3.
+    return (
+      <ThemedView style={[styles.container, styles.empty]}>
+        <ThemedText>Log in to see your bookings.</ThemedText>
+        <Pressable
+          onPress={() => router.push({ pathname: '/login', params: { mode: 'login' } })}
+          accessibilityRole="button"
+          accessibilityLabel="Log in"
+        >
+          <ThemedView type="backgroundSelected" style={styles.button}>
+            <ThemedText type="smallBold">Log in or create account</ThemedText>
+          </ThemedView>
+        </Pressable>
+      </ThemedView>
+    );
+  }
 
   return (
     <ThemedView style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable onPress={() => logOut()} accessibilityRole="button" accessibilityLabel="Log out">
+              <ThemedText>Log out</ThemedText>
+            </Pressable>
+          ),
+        }}
+      />
       <SyncStatusBanner />
       <FlatList
         data={bookings}
@@ -102,5 +131,11 @@ const styles = StyleSheet.create({
   empty: {
     padding: Spacing.four,
     alignItems: 'center',
+    gap: Spacing.three,
+  },
+  button: {
+    borderRadius: Spacing.three,
+    paddingVertical: Spacing.three,
+    paddingHorizontal: Spacing.four,
   },
 });
