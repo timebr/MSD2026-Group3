@@ -1,0 +1,16 @@
+[
+  {
+    "id": "ins-basic",
+    "name": "Basic",
+    "coverage": "Third-party liability only",
+    "deductible": 1200,
+    "pricePerDay": 0
+  },
+  {
+    "id": "ins-full",
+    "name": "Full coverage",
+    "coverage": "Zero deductible, includes glass and tyres",
+    "deductible": 0,
+    "pricePerDay": 15
+  }
+]

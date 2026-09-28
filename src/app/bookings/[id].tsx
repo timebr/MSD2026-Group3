@@ -3,43 +3,40 @@ import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Alert, Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
-import { z } from 'zod';
 
+import { CarUnavailableError } from '@/api/types';
+import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { calculatePrice } from '@/domain/pricing';
 import { useBooking, useCancelBooking, useUpdateBooking } from '@/hooks/use-bookings';
-import { useCar } from '@/hooks/use-cars';
+import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
 import { useTheme } from '@/hooks/use-theme';
-
-const dateEditSchema = z
-  .object({
-    startDate: z.string().refine((v) => !Number.isNaN(Date.parse(v)), 'Invalid date'),
-    endDate: z.string().refine((v) => !Number.isNaN(Date.parse(v)), 'Invalid date'),
-  })
-  .refine((data) => Date.parse(data.endDate) > Date.parse(data.startDate), {
-    message: 'Return date must be after the pick-up date',
-    path: ['endDate'],
-  });
-
-type DateEditValues = z.infer<typeof dateEditSchema>;
+import { useIsOnline } from '@/offline/connectivity';
+import { requestSync } from '@/offline/syncManager';
+import { bookingDatesSchema, type BookingDatesValues } from '@/validation/booking';
 
 export default function BookingDetailScreen() {
   const { id, confirmed } = useLocalSearchParams<{ id: string; confirmed?: string }>();
   const theme = useTheme();
   const { data: booking, isLoading } = useBooking(id);
   const { data: car } = useCar(booking?.carId);
+  const { data: insuranceOptions = [] } = useInsurance();
+  const locationName = useLocationName();
+  const isOnline = useIsOnline();
   const updateBooking = useUpdateBooking();
   const cancelBooking = useCancelBooking();
   const [editing, setEditing] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const {
     control,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<DateEditValues>({
-    resolver: zodResolver(dateEditSchema),
+  } = useForm<BookingDatesValues>({
+    resolver: zodResolver(bookingDatesSchema),
     defaultValues: { startDate: '', endDate: '' },
   });
 
@@ -65,9 +62,28 @@ export default function BookingDetailScreen() {
     );
   }
 
-  const onSaveDates = async (values: DateEditValues) => {
-    await updateBooking.mutateAsync({ id: booking.id, patch: values });
-    setEditing(false);
+  const onSaveDates = async (dates: BookingDatesValues) => {
+    if (!car) return;
+    setSaveError(null);
+    // New dates mean a new price; recalculated with the same rules as booking.
+    const price = calculatePrice({
+      car,
+      insurance: insuranceOptions.find((option) => option.id === booking.insuranceId),
+      startDate: dates.startDate,
+      endDate: dates.endDate,
+      pickupLocationId: booking.pickupLocationId,
+      dropoffLocationId: booking.dropoffLocationId,
+    });
+    try {
+      await updateBooking.mutateAsync({ id: booking.id, patch: { ...dates, price } });
+      setEditing(false);
+    } catch (error) {
+      setSaveError(
+        error instanceof CarUnavailableError
+          ? 'The car is already booked for some of those dates.'
+          : "Couldn't save the new dates. Please try again.",
+      );
+    }
   };
 
   const onCancel = () => {
@@ -94,7 +110,7 @@ export default function BookingDetailScreen() {
 
       {car && (
         <ThemedText type="subtitle">
-          {car.make} {car.model}
+          {car.brand} {car.model}
         </ThemedText>
       )}
 
@@ -102,14 +118,20 @@ export default function BookingDetailScreen() {
         <ThemedText type="smallBold">Status</ThemedText>
         <ThemedText type="small">
           {booking.status}
-          {booking.syncState !== 'synced' ? ` · ${booking.syncState}` : ''}
+          {booking.syncState === 'pending' ? ' · waiting to sync' : ''}
+          {booking.syncState === 'failed' ? ' · sync failed' : ''}
         </ThemedText>
+        {booking.syncState === 'failed' && isOnline && (
+          <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
+            <ThemedText type="smallBold">Retry</ThemedText>
+          </Pressable>
+        )}
       </ThemedView>
 
       <ThemedView type="backgroundElement" style={styles.section}>
         <ThemedText type="smallBold">Route</ThemedText>
         <ThemedText type="small">
-          {booking.pickupLocation} → {booking.dropoffLocation}
+          {locationName(booking.pickupLocationId)} → {locationName(booking.dropoffLocationId)}
         </ThemedText>
       </ThemedView>
 
@@ -150,7 +172,10 @@ export default function BookingDetailScreen() {
         {(errors.startDate || errors.endDate) && (
           <ThemedText type="small">{errors.startDate?.message || errors.endDate?.message}</ThemedText>
         )}
+        {saveError && <ThemedText type="small">{saveError}</ThemedText>}
       </ThemedView>
+
+      <PriceSummary price={booking.price} />
 
       {booking.status !== 'cancelled' && (
         <ThemedView style={styles.actions}>

@@ -1,8 +1,14 @@
 import type { CarRepository } from '@/api/types';
 import carsFixture from '@/data/cars.json';
+import insuranceFixture from '@/data/insurance.json';
+import locationsFixture from '@/data/locations.json';
 import type { Car, CarFilters, CarSort } from '@/models/car';
+import type { Insurance } from '@/models/insurance';
+import type { Location } from '@/models/location';
 
 const cars = carsFixture as Car[];
+const locations = locationsFixture as Location[];
+const insurance = insuranceFixture as Insurance[];
 
 // Mimics network latency so loading states are exercised even against the
 // local fixture, while staying well under NFR4's 1s dummy-data budget.
@@ -15,7 +21,7 @@ function delay<T>(value: T): Promise<T> {
 function applyFilters(list: Car[], filters?: CarFilters): Car[] {
   if (!filters) return list;
   return list.filter((car) => {
-    if (filters.location && car.location !== filters.location) return false;
+    if (filters.locationId && car.locationId !== filters.locationId) return false;
     if (filters.type && car.type !== filters.type) return false;
     if (filters.maxPricePerDay !== undefined && car.pricePerDay > filters.maxPricePerDay) return false;
     return true;
@@ -36,5 +42,13 @@ export class JsonCarRepository implements CarRepository {
 
   async getCar(id: string): Promise<Car | undefined> {
     return delay(cars.find((car) => car.id === id));
+  }
+
+  async listLocations(): Promise<Location[]> {
+    return delay(locations);
+  }
+
+  async listInsurance(): Promise<Insurance[]> {
+    return delay(insurance);
   }
 }

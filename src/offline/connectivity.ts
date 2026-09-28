@@ -1,14 +1,14 @@
-import NetInfo from '@react-native-community/netinfo';
-import { useEffect, useState } from 'react';
+import { onlineManager } from '@tanstack/react-query';
+import { useSyncExternalStore } from 'react';
+
+// NetInfo is wired into TanStack's onlineManager in `src/api/queryClient.ts`,
+// so queries and this hook share one notion of "online".
+import '@/api/queryClient';
 
 export function useIsOnline(): boolean {
-  const [isOnline, setIsOnline] = useState(true);
-
-  useEffect(() => {
-    return NetInfo.addEventListener((state) => {
-      setIsOnline(Boolean(state.isConnected && state.isInternetReachable !== false));
-    });
-  }, []);
-
-  return isOnline;
+  return useSyncExternalStore(
+    onlineManager.subscribe.bind(onlineManager),
+    () => onlineManager.isOnline(),
+    () => true,
+  );
 }

@@ -1,10 +1,11 @@
-import { StyleSheet } from 'react-native';
+import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { useSyncStatus } from '@/hooks/use-bookings';
 import { useIsOnline } from '@/offline/connectivity';
-import { useSyncStatus } from '@/offline/syncManager';
+import { requestSync } from '@/offline/syncManager';
 
 /** Makes booking sync state visible to the user, per NFR3. */
 export function SyncStatusBanner() {
@@ -15,22 +16,36 @@ export function SyncStatusBanner() {
     return null;
   }
 
+  const plural = (n: number) => `${n} booking change${n === 1 ? '' : 's'}`;
   const message = !isOnline
-    ? "You're offline — changes will sync once you're back online."
+    ? `You're offline. ${pending + failed > 0 ? `${plural(pending + failed)} will sync` : 'Changes will sync'} once you're back online.`
     : failed > 0
-      ? `${failed} booking update${failed === 1 ? '' : 's'} failed to sync. Will retry automatically.`
-      : `Syncing ${pending} booking update${pending === 1 ? '' : 's'}…`;
+      ? `${plural(failed)} failed to sync.`
+      : `Syncing ${plural(pending)}…`;
 
   return (
     <ThemedView type="backgroundElement" style={styles.banner}>
-      <ThemedText type="small">{message}</ThemedText>
+      <ThemedText type="small" style={styles.message}>
+        {message}
+      </ThemedText>
+      {isOnline && failed > 0 && (
+        <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
+          <ThemedText type="smallBold">Retry</ThemedText>
+        </Pressable>
+      )}
     </ThemedView>
   );
 }
 
 const styles = StyleSheet.create({
   banner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.two,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.three,
+  },
+  message: {
+    flex: 1,
   },
 });

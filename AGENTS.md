@@ -26,9 +26,9 @@ in the group's design document; reference those IDs in PRs and code comments.
 src/app/        Screens, Expo Router file-based routes (stack navigation)
 src/hooks/      React Query hooks (use-cars, use-bookings) + UI hooks
 src/api/        Repository interfaces (types.ts) and implementations
-  json/         CarRepository backed by src/data/cars.json (dummy data)
-  supabase/     CarRepository stub for the real backend
+  json/         CarRepository backed by the fixtures in src/data (dummy data)
   local/        BookingRepository backed by AsyncStorage (local-first)
+src/domain/     Pure business rules (pricing, availability), no React or storage
 src/offline/    Connectivity (NetInfo) + booking sync manager (NFR2/NFR3)
 src/validation/ zod schemas for the booking and payment forms (NFR5)
 src/models/     TypeScript domain types
@@ -40,10 +40,16 @@ NFR1) → repository from `src/api/index.ts` → data source.
 
 - Screens never import a repository implementation directly; they go through
   hooks, and hooks go through `src/api/index.ts`.
-- The catalog source is switched with `EXPO_PUBLIC_DATA_SOURCE` (`json` or
-  `supabase`); switching must not require changes above `src/api`.
+- The data source is chosen in `src/api/index.ts` only; replacing it must not
+  require changes above `src/api`.
+- Prices are only ever computed by `calculatePrice` in `src/domain/pricing.ts`,
+  so booking and modifying a booking can't disagree.
+- Booking writes go through the repository's write queue; never read-modify-
+  write the bookings list anywhere else.
 - Bookings are always written locally first and synced by
   `src/offline/syncManager.ts`; the UI shows sync state (pending/failed/synced).
+- Store only what the data model needs: no card details on bookings.
+- Bump the `buster` in `src/api/queryClient.ts` when a cached type changes shape.
 
 ## Conventions
 

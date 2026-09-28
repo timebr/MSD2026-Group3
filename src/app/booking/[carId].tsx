@@ -1,35 +1,31 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
-import { Controller, useForm } from 'react-hook-form';
+import { useState } from 'react';
+import { Controller, useForm, useWatch } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
+import { ChipGroup } from '@/components/chip-group';
+import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useCar } from '@/hooks/use-cars';
+import { calculatePrice } from '@/domain/pricing';
+import { checkAvailability } from '@/hooks/use-bookings';
+import { useCar, useInsurance, useLocations } from '@/hooks/use-cars';
 import { useTheme } from '@/hooks/use-theme';
+import type { BookingDraft } from '@/models/booking';
+import type { Car } from '@/models/car';
+import type { Insurance } from '@/models/insurance';
+import type { Location } from '@/models/location';
 import { bookingFormSchema, type BookingFormValues } from '@/validation/booking';
 
 export default function BookingFormScreen() {
   const { carId } = useLocalSearchParams<{ carId: string }>();
   const { data: car, isLoading } = useCar(carId);
-  const theme = useTheme();
+  const { data: locations } = useLocations();
+  const { data: insuranceOptions } = useInsurance();
 
-  const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<BookingFormValues>({
-    resolver: zodResolver(bookingFormSchema),
-    defaultValues: {
-      pickupLocation: car?.location ?? '',
-      dropoffLocation: car?.location ?? '',
-      startDate: '',
-      endDate: '',
-    },
-  });
-
-  if (isLoading) {
+  if (isLoading || !locations || !insuranceOptions) {
     return (
       <ThemedView style={styles.center}>
         <ThemedText>Loading…</ThemedText>
@@ -45,132 +41,152 @@ export default function BookingFormScreen() {
     );
   }
 
-  const onSubmit = (values: BookingFormValues) => {
-    const days = Math.max(
-      1,
-      Math.ceil((Date.parse(values.endDate) - Date.parse(values.startDate)) / (24 * 60 * 60 * 1000)),
-    );
-    const insurance = car.insuranceOptions.find((option) => option.id === values.insuranceOptionId);
-    const totalPrice = days * (car.pricePerDay + (insurance?.pricePerDay ?? 0));
+  return <BookingForm car={car} locations={locations} insuranceOptions={insuranceOptions} />;
+}
 
-    router.push({
-      pathname: '/checkout',
-      params: {
-        draft: JSON.stringify({ carId: car.id, ...values, totalPrice }),
-      },
+function BookingForm({
+  car,
+  locations,
+  insuranceOptions,
+}: {
+  car: Car;
+  locations: Location[];
+  insuranceOptions: Insurance[];
+}) {
+  const theme = useTheme();
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const locationOptions = locations.map((location) => ({ value: location.id, label: location.name }));
+
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<BookingFormValues>({
+    resolver: zodResolver(bookingFormSchema),
+    defaultValues: {
+      pickupLocationId: car.locationId,
+      dropoffLocationId: car.locationId,
+      startDate: '',
+      endDate: '',
+      insuranceId: insuranceOptions[0]?.id,
+    },
+  });
+
+  const values = useWatch({ control });
+  const preview = bookingFormSchema.safeParse(values);
+  const priceFor = (form: BookingFormValues) =>
+    calculatePrice({
+      car,
+      insurance: insuranceOptions.find((option) => option.id === form.insuranceId),
+      startDate: form.startDate,
+      endDate: form.endDate,
+      pickupLocationId: form.pickupLocationId,
+      dropoffLocationId: form.dropoffLocationId,
     });
+
+  const onSubmit = async (form: BookingFormValues) => {
+    setSubmitError(null);
+    if (!(await checkAvailability(car.id, form.startDate, form.endDate))) {
+      setSubmitError('This car is already booked for some of those dates. Try other dates.');
+      return;
+    }
+    const draft: BookingDraft = { carId: car.id, ...form, price: priceFor(form) };
+    router.push({ pathname: '/checkout', params: { draft: JSON.stringify(draft) } });
   };
+
+  const dateInput = (name: 'startDate' | 'endDate', label: string, placeholder: string) => (
+    <ThemedView style={styles.field}>
+      <ThemedText type="smallBold">{label} (YYYY-MM-DD)</ThemedText>
+      <Controller
+        control={control}
+        name={name}
+        render={({ field }) => (
+          <TextInput
+            value={field.value}
+            onChangeText={field.onChange}
+            placeholder={placeholder}
+            placeholderTextColor={theme.textSecondary}
+            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
+            accessibilityLabel={label}
+          />
+        )}
+      />
+      {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
+    </ThemedView>
+  );
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
       <ThemedText type="subtitle">
-        {car.make} {car.model}
+        {car.brand} {car.model}
       </ThemedText>
 
       <ThemedView style={styles.field}>
         <ThemedText type="smallBold">Pick-up location</ThemedText>
         <Controller
           control={control}
-          name="pickupLocation"
+          name="pickupLocationId"
           render={({ field }) => (
-            <TextInput
+            <ChipGroup
+              options={locationOptions}
               value={field.value}
-              onChangeText={field.onChange}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
+              onChange={field.onChange}
               accessibilityLabel="Pick-up location"
             />
           )}
         />
-        {errors.pickupLocation && <ThemedText type="small">{errors.pickupLocation.message}</ThemedText>}
+        {errors.pickupLocationId && <ThemedText type="small">{errors.pickupLocationId.message}</ThemedText>}
       </ThemedView>
 
       <ThemedView style={styles.field}>
         <ThemedText type="smallBold">Drop-off location</ThemedText>
         <Controller
           control={control}
-          name="dropoffLocation"
+          name="dropoffLocationId"
           render={({ field }) => (
-            <TextInput
+            <ChipGroup
+              options={locationOptions}
               value={field.value}
-              onChangeText={field.onChange}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
+              onChange={field.onChange}
               accessibilityLabel="Drop-off location"
             />
           )}
         />
-        {errors.dropoffLocation && <ThemedText type="small">{errors.dropoffLocation.message}</ThemedText>}
+        {errors.dropoffLocationId && <ThemedText type="small">{errors.dropoffLocationId.message}</ThemedText>}
       </ThemedView>
 
+      {dateInput('startDate', 'Pick-up date', '2026-10-01')}
+      {dateInput('endDate', 'Return date', '2026-10-05')}
+
       <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Pick-up date (YYYY-MM-DD)</ThemedText>
+        <ThemedText type="smallBold">Insurance</ThemedText>
         <Controller
           control={control}
-          name="startDate"
+          name="insuranceId"
           render={({ field }) => (
-            <TextInput
+            <ChipGroup
+              options={insuranceOptions.map((option) => ({
+                value: option.id,
+                label: `${option.name}${option.pricePerDay > 0 ? ` (+${option.pricePerDay} DKK/day)` : ''}`,
+              }))}
               value={field.value}
-              onChangeText={field.onChange}
-              placeholder="2026-10-01"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-              accessibilityLabel="Pick-up date"
+              onChange={field.onChange}
+              accessibilityLabel="Insurance"
             />
           )}
         />
-        {errors.startDate && <ThemedText type="small">{errors.startDate.message}</ThemedText>}
       </ThemedView>
 
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Return date (YYYY-MM-DD)</ThemedText>
-        <Controller
-          control={control}
-          name="endDate"
-          render={({ field }) => (
-            <TextInput
-              value={field.value}
-              onChangeText={field.onChange}
-              placeholder="2026-10-05"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-              accessibilityLabel="Return date"
-            />
-          )}
-        />
-        {errors.endDate && <ThemedText type="small">{errors.endDate.message}</ThemedText>}
-      </ThemedView>
+      {preview.success && <PriceSummary price={priceFor(preview.data)} />}
 
-      {car.insuranceOptions.length > 0 && (
-        <ThemedView style={styles.field}>
-          <ThemedText type="smallBold">Insurance</ThemedText>
-          <Controller
-            control={control}
-            name="insuranceOptionId"
-            render={({ field }) => (
-              <ThemedView style={styles.insuranceOptions}>
-                {car.insuranceOptions.map((option) => (
-                  <Pressable
-                    key={option.id}
-                    onPress={() => field.onChange(option.id)}
-                    accessibilityRole="button"
-                    accessibilityLabel={`Select ${option.name} insurance`}
-                  >
-                    <ThemedView
-                      type={field.value === option.id ? 'backgroundSelected' : 'backgroundElement'}
-                      style={styles.insuranceChip}
-                    >
-                      <ThemedText type="small">
-                        {option.name} {option.pricePerDay > 0 ? `(+${option.pricePerDay} DKK/day)` : ''}
-                      </ThemedText>
-                    </ThemedView>
-                  </Pressable>
-                ))}
-              </ThemedView>
-            )}
-          />
-        </ThemedView>
-      )}
+      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
 
-      <Pressable onPress={handleSubmit(onSubmit)} accessibilityRole="button" accessibilityLabel="Continue to checkout">
+      <Pressable
+        onPress={handleSubmit(onSubmit)}
+        disabled={isSubmitting}
+        accessibilityRole="button"
+        accessibilityLabel="Continue to checkout"
+      >
         <ThemedView type="backgroundSelected" style={styles.submitButton}>
           <ThemedText type="smallBold">Continue to checkout</ThemedText>
         </ThemedView>
@@ -198,16 +214,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     fontSize: 16,
-  },
-  insuranceOptions: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  insuranceChip: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    borderRadius: Spacing.three,
   },
   submitButton: {
     borderRadius: Spacing.three,

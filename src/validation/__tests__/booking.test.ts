@@ -7,8 +7,8 @@ const yesterday = new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString();
 describe('bookingFormSchema', () => {
   it('accepts a valid booking', () => {
     const result = bookingFormSchema.safeParse({
-      pickupLocation: 'Copenhagen Airport',
-      dropoffLocation: 'Copenhagen Airport',
+      pickupLocationId: 'loc-cph-airport',
+      dropoffLocationId: 'loc-cph-airport',
       startDate: tomorrow,
       endDate: dayAfter,
     });
@@ -17,8 +17,8 @@ describe('bookingFormSchema', () => {
 
   it('rejects an end date before the start date', () => {
     const result = bookingFormSchema.safeParse({
-      pickupLocation: 'Copenhagen Airport',
-      dropoffLocation: 'Copenhagen Airport',
+      pickupLocationId: 'loc-cph-airport',
+      dropoffLocationId: 'loc-cph-airport',
       startDate: dayAfter,
       endDate: tomorrow,
     });
@@ -27,8 +27,8 @@ describe('bookingFormSchema', () => {
 
   it('rejects a pick-up date in the past', () => {
     const result = bookingFormSchema.safeParse({
-      pickupLocation: 'Copenhagen Airport',
-      dropoffLocation: 'Copenhagen Airport',
+      pickupLocationId: 'loc-cph-airport',
+      dropoffLocationId: 'loc-cph-airport',
       startDate: yesterday,
       endDate: tomorrow,
     });
@@ -37,8 +37,8 @@ describe('bookingFormSchema', () => {
 
   it('rejects a missing pick-up location', () => {
     const result = bookingFormSchema.safeParse({
-      pickupLocation: '',
-      dropoffLocation: 'Copenhagen Airport',
+      pickupLocationId: '',
+      dropoffLocationId: 'loc-cph-airport',
       startDate: tomorrow,
       endDate: dayAfter,
     });

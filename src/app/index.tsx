@@ -1,26 +1,27 @@
 import { Link, Stack } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, TextInput } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CarCard } from '@/components/car-card';
+import { ChipGroup } from '@/components/chip-group';
 import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useCars } from '@/hooks/use-cars';
+import { useCars, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
-import { useTheme } from '@/hooks/use-theme';
 
 const CAR_TYPES: CarType[] = ['city', 'suv', 'estate', 'van', 'luxury'];
+const TYPE_OPTIONS = CAR_TYPES.map((carType) => ({ value: carType, label: carType }));
 
 export default function CarListScreen() {
-  const theme = useTheme();
-  const [location, setLocation] = useState('');
+  const { data: locations = [] } = useLocations();
+  const [locationId, setLocationId] = useState<string | undefined>(undefined);
   const [type, setType] = useState<CarType | undefined>(undefined);
-  const [sort, setSort] = useState<CarSort | undefined>(undefined);
+  const [sort, setSort] = useState<CarSort>('price-asc');
 
-  const filters = useMemo(() => ({ location: location.trim() || undefined, type }), [location, type]);
+  const filters = useMemo(() => ({ locationId, type }), [locationId, type]);
   const { data: cars, isLoading, isError } = useCars(filters, sort);
 
   return (
@@ -40,29 +41,21 @@ export default function CarListScreen() {
         <SyncStatusBanner />
 
         <ThemedView style={styles.filters}>
-          <TextInput
-            value={location}
-            onChangeText={setLocation}
-            placeholder="Pick-up location"
-            placeholderTextColor={theme.textSecondary}
-            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
+          <ChipGroup
+            options={locations.map((location) => ({ value: location.id, label: location.name }))}
+            value={locationId}
+            onChange={setLocationId}
+            allowDeselect
             accessibilityLabel="Pick-up location"
           />
 
-          <ThemedView style={styles.chipRow}>
-            {CAR_TYPES.map((carType) => (
-              <Pressable
-                key={carType}
-                onPress={() => setType((current) => (current === carType ? undefined : carType))}
-                accessibilityRole="button"
-                accessibilityLabel={`Filter by ${carType}`}
-              >
-                <ThemedView type={type === carType ? 'backgroundSelected' : 'backgroundElement'} style={styles.chip}>
-                  <ThemedText type="small">{carType}</ThemedText>
-                </ThemedView>
-              </Pressable>
-            ))}
-          </ThemedView>
+          <ChipGroup
+            options={TYPE_OPTIONS}
+            value={type}
+            onChange={setType}
+            allowDeselect
+            accessibilityLabel="Car type"
+          />
 
           <Pressable
             onPress={() => setSort((current) => (current === 'price-asc' ? 'price-desc' : 'price-asc'))}
@@ -102,23 +95,6 @@ const styles = StyleSheet.create({
   filters: {
     gap: Spacing.two,
     paddingVertical: Spacing.three,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
-  chipRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: Spacing.two,
-  },
-  chip: {
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.one,
-    borderRadius: Spacing.four,
   },
   list: {
     paddingBottom: Spacing.four,
