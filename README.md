@@ -33,33 +33,42 @@ and a review from a teammate who didn't write the code.
 src/
   app/            Screens (Expo Router file-based routes)
   api/            Repository interfaces + implementations (see below)
-  data/           Dummy car catalog (src/data/cars.json)
-  models/         TypeScript types for Car, Booking, User
+  data/           Dummy catalog: cars, locations, insurance (JSON)
+  domain/         Pure business rules: pricing, availability
+  models/         TypeScript types (Car, Location, Insurance, Booking, User)
   validation/     Zod schemas for form validation
   offline/        Connectivity + booking sync (NFR2/NFR3)
   hooks/          React Query hooks and shared UI hooks
   components/     Shared UI components
 ```
 
-## Data source: JSON now, Supabase/Mongo later
+## Data and caching
 
-The car catalog is read through the `CarRepository` interface
-(`src/api/types.ts`). Today `src/api/json/carRepository.ts` implements it
-against the dummy fixture in `src/data/cars.json`. When the team builds the
-real backend, implement the same interface in
-`src/api/supabase/carRepository.ts` (already stubbed with the steps) and set:
-
-```
-EXPO_PUBLIC_DATA_SOURCE=supabase
-```
-
-in a local `.env` file (copy `.env.example`). No screen or hook needs to
-change — they all go through `src/api/index.ts`.
+The catalog (cars, locations, insurance) is read through the `CarRepository`
+interface (`src/api/types.ts`). Today `src/api/json/carRepository.ts`
+implements it against the fixtures in `src/data`. A real backend implements
+the same interface and is swapped in in `src/api/index.ts`; no screen or hook
+changes.
 
 Bookings are always written locally first (`src/api/local/bookingRepository.ts`,
-backed by `AsyncStorage`) regardless of data source, since they're
-user-generated and need to work offline. `src/offline/syncManager.ts` is
-where pending bookings get pushed to the real backend once one exists.
+backed by `AsyncStorage`), because they're user-generated and must work
+offline. Writes are queued so they never overwrite each other, and a booking
+that overlaps another active booking of the same car is refused.
+`src/offline/syncManager.ts` pushes pending bookings to the backend (a stub
+for now) one at a time.
+
+Caching rules:
+
+- **Catalog:** cached by TanStack Query and persisted to `AsyncStorage` for
+  24 hours, so browsed cars stay available offline (NFR1). It's refetched
+  when older than 5 minutes, when the app returns to the foreground and when
+  the connection comes back. Bump `buster` in `src/api/queryClient.ts`
+  whenever the shape of cached data changes.
+- **Bookings:** the local repository is the source of truth, so booking
+  queries aren't persisted a second time. Changes sync right away when
+  online, on reconnect, on app start, and when the user taps Retry.
+- In dev builds, My bookings has a "Simulate sync failure" switch to demo the
+  failed-sync state.
 
 ## Scripts
 
@@ -71,8 +80,9 @@ where pending bookings get pushed to the real backend once one exists.
 
 ## Status
 
-Initial scaffold: navigation shell, car list/detail, booking form, mock
-checkout, and self-service booking management (view/modify/cancel) are wired
-up against the JSON fixture with local persistence and a sync-status
-indicator. Not yet implemented: registration (FR9), filtering beyond type
-(FR7), return reminders (FR10), and the real backend.
+Car list with location and type filters and price sort, car details, booking
+form with live price breakdown and availability check, mock checkout, and
+self-service booking management (view/modify/cancel) work against the JSON
+fixtures with local persistence and a sync-status indicator. Not yet
+implemented: registration (FR9), a separate search screen with dates (S2),
+more filters (FR7), return reminders (FR10), and the real backend.

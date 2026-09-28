@@ -1,35 +1,26 @@
 export type FuelPolicy = 'full-to-full' | 'full-to-empty' | 'pre-purchase';
 
-export type CarType = 'city' | 'suv' | 'estate' | 'van' | 'luxury';
+export type FuelType = 'petrol' | 'diesel' | 'hybrid' | 'electric';
 
-export interface InsuranceOption {
-  id: string;
-  name: string;
-  coverageSummary: string;
-  deductible: number;
-  pricePerDay: number;
-}
+export type CarType = 'city' | 'suv' | 'estate' | 'van' | 'luxury';
 
 export interface Car {
   id: string;
-  make: string;
+  brand: string;
   model: string;
   type: CarType;
+  fuelType: FuelType;
   transmission: 'manual' | 'automatic';
   seats: number;
-  luggageCapacity: string;
-  fuelPolicy: FuelPolicy;
-  isElectric: boolean;
-  hasCarPlay: boolean;
+  fuelPolicy: FuelPolicy; // FE#5, persona 2 (F5)
   pricePerDay: number;
-  location: string;
+  locationId: string;
   imageUrl: string;
   description: string;
-  insuranceOptions: InsuranceOption[];
 }
 
 export interface CarFilters {
-  location?: string;
+  locationId?: string;
   type?: CarType;
   maxPricePerDay?: number;
 }

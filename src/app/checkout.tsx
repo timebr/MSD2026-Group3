@@ -4,22 +4,15 @@ import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
 
+import { CarUnavailableError } from '@/api/types';
+import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCreateBooking } from '@/hooks/use-bookings';
 import { useTheme } from '@/hooks/use-theme';
+import type { BookingDraft } from '@/models/booking';
 import { paymentFormSchema, type PaymentFormValues } from '@/validation/payment';
-
-interface BookingDraft {
-  carId: string;
-  pickupLocation: string;
-  dropoffLocation: string;
-  startDate: string;
-  endDate: string;
-  insuranceOptionId?: string;
-  totalPrice: number;
-}
 
 export default function CheckoutScreen() {
   const { draft } = useLocalSearchParams<{ draft: string }>();
@@ -58,39 +51,28 @@ export default function CheckoutScreen() {
     );
   }
 
-  const onSubmit = async (payment: PaymentFormValues) => {
+  // The card fields are only validated (mock checkout, FR6) and then discarded;
+  // the booking stores method, amount and status like the data model's Payment.
+  const onSubmit = async (_card: PaymentFormValues) => {
     setSubmitError(null);
     try {
       const booking = await createBooking.mutateAsync({
-        carId: bookingDraft.carId,
-        pickupLocation: bookingDraft.pickupLocation,
-        dropoffLocation: bookingDraft.dropoffLocation,
-        startDate: bookingDraft.startDate,
-        endDate: bookingDraft.endDate,
-        insuranceOptionId: bookingDraft.insuranceOptionId,
-        totalPrice: bookingDraft.totalPrice,
-        payment: {
-          cardholderName: payment.cardholderName,
-          cardNumberLast4: payment.cardNumber.slice(-4),
-          expiryMonth: payment.expiryMonth,
-          expiryYear: payment.expiryYear,
-        },
+        ...bookingDraft,
+        payment: { method: 'card', amount: bookingDraft.price.totalPrice, status: 'paid' },
       });
       router.replace({ pathname: '/bookings/[id]', params: { id: booking.id, confirmed: '1' } });
-    } catch {
-      setSubmitError("Couldn't complete checkout. Please try again.");
+    } catch (error) {
+      setSubmitError(
+        error instanceof CarUnavailableError
+          ? 'This car is no longer available for those dates. Go back and pick other dates.'
+          : "Couldn't complete checkout. Please try again.",
+      );
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ThemedView type="backgroundElement" style={styles.summary}>
-        <ThemedText type="smallBold">Total due</ThemedText>
-        <ThemedText type="title">{bookingDraft.totalPrice} DKK</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Includes base rate and taxes. No hidden fees.
-        </ThemedText>
-      </ThemedView>
+      <PriceSummary price={bookingDraft.price} />
 
       <ThemedView style={styles.field}>
         <ThemedText type="smallBold">Cardholder name</ThemedText>
@@ -222,11 +204,6 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     gap: Spacing.three,
-  },
-  summary: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.half,
   },
   field: {
     gap: Spacing.one,

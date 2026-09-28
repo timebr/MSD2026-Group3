@@ -1,194 +1,86 @@
 [
   {
     "id": "car-1",
-    "make": "Volkswagen",
+    "brand": "Volkswagen",
     "model": "Up!",
     "type": "city",
+    "fuelType": "petrol",
     "transmission": "manual",
     "seats": 4,
-    "luggageCapacity": "1 small suitcase",
     "fuelPolicy": "full-to-full",
-    "isElectric": false,
-    "hasCarPlay": true,
     "pricePerDay": 29,
-    "location": "Copenhagen Airport",
+    "locationId": "loc-cph-airport",
     "imageUrl": "https://images.unsplash.com/photo-1502877338535-766e1452684a",
-    "description": "Compact city car, easy to park, great for short trips around town.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 1200,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible, includes glass and tyres",
-        "deductible": 0,
-        "pricePerDay": 12
-      }
-    ]
+    "description": "Compact city car, easy to park, great for short trips around town."
   },
   {
     "id": "car-2",
-    "make": "Tesla",
+    "brand": "Tesla",
     "model": "Model 3",
     "type": "city",
+    "fuelType": "electric",
     "transmission": "automatic",
     "seats": 5,
-    "luggageCapacity": "2 large suitcases",
     "fuelPolicy": "full-to-full",
-    "isElectric": true,
-    "hasCarPlay": false,
     "pricePerDay": 55,
-    "location": "Copenhagen Airport",
+    "locationId": "loc-cph-airport",
     "imageUrl": "https://images.unsplash.com/photo-1560958089-b8a1929cea89",
-    "description": "Electric sedan with autopilot. Lower running cost than a petrol equivalent.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 1500,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible, includes charging cable cover",
-        "deductible": 0,
-        "pricePerDay": 15
-      }
-    ]
+    "description": "Electric sedan with autopilot. Lower running cost than a petrol equivalent."
   },
   {
     "id": "car-3",
-    "make": "Skoda",
+    "brand": "Skoda",
     "model": "Kodiaq",
     "type": "suv",
+    "fuelType": "diesel",
     "transmission": "automatic",
     "seats": 7,
-    "luggageCapacity": "4 large suitcases",
     "fuelPolicy": "full-to-full",
-    "isElectric": false,
-    "hasCarPlay": true,
     "pricePerDay": 68,
-    "location": "Odense City Centre",
+    "locationId": "loc-odense-centre",
     "imageUrl": "https://images.unsplash.com/photo-1519641471654-76ce0107ad1b",
-    "description": "Spacious 7-seat SUV, ideal for family trips with lots of luggage.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 2000,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible, includes glass, tyres and undercarriage",
-        "deductible": 0,
-        "pricePerDay": 18
-      }
-    ]
+    "description": "Spacious 7-seat SUV, ideal for family trips with lots of luggage."
   },
   {
     "id": "car-4",
-    "make": "Volvo",
+    "brand": "Volvo",
     "model": "XC60",
     "type": "suv",
+    "fuelType": "hybrid",
     "transmission": "automatic",
     "seats": 5,
-    "luggageCapacity": "3 large suitcases",
     "fuelPolicy": "full-to-empty",
-    "isElectric": false,
-    "hasCarPlay": true,
     "pricePerDay": 72,
-    "location": "Odense City Centre",
+    "locationId": "loc-odense-centre",
     "imageUrl": "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf",
-    "description": "Premium SUV with a full safety suite, comfortable for longer motorway trips.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 2200,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible",
-        "deductible": 0,
-        "pricePerDay": 20
-      }
-    ]
+    "description": "Premium SUV with a full safety suite, comfortable for longer motorway trips."
   },
   {
     "id": "car-5",
-    "make": "Toyota",
+    "brand": "Toyota",
     "model": "Corolla Touring Sports",
     "type": "estate",
+    "fuelType": "hybrid",
     "transmission": "automatic",
     "seats": 5,
-    "luggageCapacity": "3 large suitcases",
     "fuelPolicy": "full-to-full",
-    "isElectric": false,
-    "hasCarPlay": true,
     "pricePerDay": 45,
-    "location": "Aarhus Central Station",
+    "locationId": "loc-aarhus-station",
     "imageUrl": "https://images.unsplash.com/photo-1533106418989-88406c7cc8ca",
-    "description": "Hybrid estate car, good fuel economy for longer road trips.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 1500,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible, includes glass and tyres",
-        "deductible": 0,
-        "pricePerDay": 14
-      }
-    ]
+    "description": "Hybrid estate car, good fuel economy for longer road trips."
   },
   {
     "id": "car-6",
-    "make": "Fiat",
+    "brand": "Fiat",
     "model": "500e",
     "type": "city",
+    "fuelType": "electric",
     "transmission": "automatic",
     "seats": 4,
-    "luggageCapacity": "1 small suitcase",
     "fuelPolicy": "full-to-full",
-    "isElectric": true,
-    "hasCarPlay": true,
     "pricePerDay": 39,
-    "location": "Odense City Centre",
+    "locationId": "loc-odense-centre",
     "imageUrl": "https://images.unsplash.com/photo-1617814076367-b759c7d7e738",
-    "description": "Compact electric city car with Apple CarPlay, cheap to charge in Scandinavia.",
-    "insuranceOptions": [
-      {
-        "id": "ins-basic",
-        "name": "Basic",
-        "coverageSummary": "Third-party liability only",
-        "deductible": 1200,
-        "pricePerDay": 0
-      },
-      {
-        "id": "ins-full",
-        "name": "Full coverage",
-        "coverageSummary": "Zero deductible, includes charging cable cover",
-        "deductible": 0,
-        "pricePerDay": 10
-      }
-    ]
+    "description": "Compact electric city car with Apple CarPlay, cheap to charge in Scandinavia."
   }
 ]

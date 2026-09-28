@@ -1,0 +1,17 @@
+[
+  {
+    "id": "loc-cph-airport",
+    "name": "Copenhagen Airport",
+    "address": "Lufthavnsboulevarden 6, 2770 Kastrup"
+  },
+  {
+    "id": "loc-odense-centre",
+    "name": "Odense City Centre",
+    "address": "Østre Stationsvej 27, 5000 Odense C"
+  },
+  {
+    "id": "loc-aarhus-station",
+    "name": "Aarhus Central Station",
+    "address": "Banegårdspladsen 1, 8000 Aarhus C"
+  }
+]

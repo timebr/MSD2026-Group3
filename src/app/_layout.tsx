@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import { asyncStoragePersister, queryClient } from '@/api/queryClient';
+import { persistOptions, queryClient } from '@/api/queryClient';
 import { useAutoSync } from '@/offline/syncManager';
 
 SplashScreen.preventAutoHideAsync();
@@ -35,7 +35,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={{ persister: asyncStoragePersister }}>
+    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <SafeAreaProvider>
         <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
           <AppShell />

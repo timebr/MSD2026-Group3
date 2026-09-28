@@ -10,15 +10,15 @@ import type { Car } from '@/models/car';
 export function CarCard({ car }: { car: Car }) {
   return (
     <Link href={{ pathname: '/car/[id]', params: { id: car.id } }} asChild>
-      <Pressable accessibilityRole="button" accessibilityLabel={`View details for ${car.make} ${car.model}`}>
+      <Pressable accessibilityRole="button" accessibilityLabel={`View details for ${car.brand} ${car.model}`}>
         <ThemedView type="backgroundElement" style={styles.card}>
           <Image source={{ uri: car.imageUrl }} style={styles.image} contentFit="cover" />
           <ThemedView style={styles.info}>
             <ThemedText type="subtitle">
-              {car.make} {car.model}
+              {car.brand} {car.model}
             </ThemedText>
             <ThemedText type="small" themeColor="textSecondary">
-              {car.type} · {car.transmission} · {car.seats} seats
+              {car.type} · {car.fuelType} · {car.transmission} · {car.seats} seats
             </ThemedText>
             <ThemedText type="smallBold">{`${car.pricePerDay} DKK / day`}</ThemedText>
           </ThemedView>

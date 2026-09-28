@@ -5,11 +5,13 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useCar } from '@/hooks/use-cars';
+import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
 
 export default function CarDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: car, isLoading } = useCar(id);
+  const { data: insuranceOptions = [] } = useInsurance();
+  const locationName = useLocationName();
 
   if (isLoading) {
     return (
@@ -32,27 +34,28 @@ export default function CarDetailScreen() {
       <Image source={{ uri: car.imageUrl }} style={styles.image} contentFit="cover" />
       <ThemedView style={styles.content}>
         <ThemedText type="title">
-          {car.make} {car.model}
+          {car.brand} {car.model}
         </ThemedText>
         <ThemedText themeColor="textSecondary">
-          {car.type} · {car.transmission} · {car.seats} seats · {car.luggageCapacity}
+          {car.type} · {car.fuelType} · {car.transmission} · {car.seats} seats
         </ThemedText>
         <ThemedText>{car.description}</ThemedText>
+        <ThemedText type="small" themeColor="textSecondary">
+          Pick up at {locationName(car.locationId)}
+        </ThemedText>
 
         <ThemedView type="backgroundElement" style={styles.section}>
           <ThemedText type="smallBold">Fuel policy</ThemedText>
           <ThemedText type="small">{car.fuelPolicy.replace(/-/g, ' ')}</ThemedText>
-          {car.isElectric && <ThemedText type="small">Electric vehicle</ThemedText>}
-          {car.hasCarPlay && <ThemedText type="small">Apple CarPlay / Android Auto</ThemedText>}
         </ThemedView>
 
         <ThemedView type="backgroundElement" style={styles.section}>
           <ThemedText type="smallBold">Insurance options</ThemedText>
-          {car.insuranceOptions.map((option) => (
+          {insuranceOptions.map((option) => (
             <ThemedView key={option.id} style={styles.insuranceRow}>
               <ThemedText type="small">{option.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {option.coverageSummary} · {option.deductible} DKK deductible
+                {option.coverage} · {option.deductible} DKK deductible
                 {option.pricePerDay > 0 ? ` · +${option.pricePerDay} DKK/day` : ''}
               </ThemedText>
             </ThemedView>
