@@ -18,7 +18,7 @@ import { requestSync } from '@/offline/syncManager';
 import { bookingDatesSchema, type BookingDatesValues } from '@/validation/booking';
 
 export default function BookingDetailScreen() {
-  const { id, confirmed } = useLocalSearchParams<{ id: string; confirmed?: string }>();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { data: booking, isLoading } = useBooking(id);
   const { data: car } = useCar(booking?.carId);
   const { data: insuranceOptions = [] } = useInsurance();
@@ -101,12 +101,6 @@ export default function BookingDetailScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      {confirmed === '1' && (
-        <ThemedView type="backgroundElement" style={styles.confirmedBanner}>
-          <ThemedText type="smallBold">Booking confirmed!</ThemedText>
-        </ThemedView>
-      )}
-
       {car && (
         <ThemedText type="subtitle">
           {car.brand} {car.model}
@@ -202,11 +196,6 @@ const styles = StyleSheet.create({
   content: {
     padding: Spacing.three,
     gap: Spacing.three,
-  },
-  confirmedBanner: {
-    borderRadius: Spacing.three,
-    padding: Spacing.three,
-    alignItems: 'center',
   },
   section: {
     borderRadius: Spacing.three,

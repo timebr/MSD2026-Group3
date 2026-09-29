@@ -1,4 +1,4 @@
-import { Link, Redirect, Stack } from 'expo-router';
+import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,7 +9,6 @@ import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useAuth } from '@/hooks/use-auth';
 import { useCars, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
 
@@ -17,7 +16,8 @@ const CAR_TYPES: CarType[] = ['city', 'suv', 'estate', 'van', 'luxury'];
 const TYPE_OPTIONS = CAR_TYPES.map((carType) => ({ value: carType, label: carType }));
 
 export default function CarListScreen() {
-  const { user, isGuest } = useAuth();
+  // Set by checkout after a booking is placed.
+  const { confirmedBookingId } = useLocalSearchParams<{ confirmedBookingId?: string }>();
   const { data: locations = [] } = useLocations();
   const { data: insuranceOptions = [] } = useInsurance();
   const [locationId, setLocationId] = useState<string | undefined>(undefined);
@@ -26,11 +26,6 @@ export default function CarListScreen() {
 
   const filters = useMemo(() => ({ locationId, type }), [locationId, type]);
   const { data: cars, isLoading, isError } = useCars(filters, sort);
-
-  // First launch without a login or guest choice: show the welcome screen (S3).
-  if (!user && !isGuest) {
-    return <Redirect href="/welcome" />;
-  }
 
   return (
     <ThemedView style={styles.container}>
@@ -47,6 +42,30 @@ export default function CarListScreen() {
       />
       <SafeAreaView style={styles.safeArea} edges={['bottom']}>
         <SyncStatusBanner />
+
+        {confirmedBookingId && (
+          <ThemedView type="backgroundElement" style={styles.confirmedBanner}>
+            <ThemedText type="smallBold">Booking confirmed!</ThemedText>
+            <ThemedView type="backgroundElement" style={styles.confirmedActions}>
+              <Link href={{ pathname: '/bookings/[id]', params: { id: confirmedBookingId } }} asChild>
+                <Pressable accessibilityRole="button" accessibilityLabel="View booking">
+                  <ThemedText type="link" themeColor="text">
+                    View booking
+                  </ThemedText>
+                </Pressable>
+              </Link>
+              <Pressable
+                onPress={() => router.setParams({ confirmedBookingId: undefined })}
+                accessibilityRole="button"
+                accessibilityLabel="Dismiss confirmation"
+              >
+                <ThemedText type="link" themeColor="text">
+                  Dismiss
+                </ThemedText>
+              </Pressable>
+            </ThemedView>
+          </ThemedView>
+        )}
 
         <ThemedView style={styles.filters}>
           <ChipGroup
@@ -99,6 +118,16 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     paddingHorizontal: Spacing.three,
+  },
+  confirmedBanner: {
+    borderRadius: Spacing.three,
+    padding: Spacing.three,
+    gap: Spacing.two,
+    marginTop: Spacing.two,
+  },
+  confirmedActions: {
+    flexDirection: 'row',
+    gap: Spacing.four,
   },
   filters: {
     gap: Spacing.two,

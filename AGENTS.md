@@ -52,6 +52,10 @@ NFR1) → repository from `src/api/index.ts` → data source.
   passwords (only salted hashes).
 - Who is logged in comes from `useAuth()` (`src/hooks/use-auth.tsx`). Guests
   may browse; creating a booking always needs a logged-in user.
+- Whether the welcome screen or the rest of the app is reachable is decided by
+  the `Stack.Protected` guards in `src/app/_layout.tsx`. Screens don't
+  `<Redirect>` or navigate after logging in or continuing as a guest; changing
+  `useAuth()` state is enough.
 - Bump the `buster` in `src/api/queryClient.ts` when a cached type changes shape.
 
 ## Conventions

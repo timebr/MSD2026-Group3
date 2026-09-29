@@ -68,7 +68,9 @@ export default function CheckoutScreen() {
         userId: user.id,
         payment: { method: 'card', amount: bookingDraft.price.totalPrice, status: 'paid' },
       });
-      router.replace({ pathname: '/bookings/[id]', params: { id: booking.id, confirmed: '1' } });
+      // Back to the car overview (S1), closing the car, booking and checkout
+      // screens; the list shows a confirmation with a link to the booking.
+      router.dismissTo({ pathname: '/', params: { confirmedBookingId: booking.id } });
     } catch (error) {
       setSubmitError(
         error instanceof CarUnavailableError
