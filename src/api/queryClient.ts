@@ -59,7 +59,9 @@ export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   persister: asyncStoragePersister,
   maxAge: DAY_MS,
   // Bump whenever the shape of cached data changes (e.g. a field on Car), so
-  // old-shaped data from a previous app version isn't restored.
+  // old-shaped data from a previous app version isn't restored. Bookings
+  // aren't in this cache; their shape is versioned by STORAGE_KEY in
+  // src/api/local/bookingRepository.ts instead.
   buster: 'v3',
   dehydrateOptions: {
     shouldDehydrateQuery: (query) => query.state.status === 'success' && !isBookingQuery(query),

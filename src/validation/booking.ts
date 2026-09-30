@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import { toDateString } from '@/utils/date';
+
 const isoDate = z.string().refine((value) => !Number.isNaN(Date.parse(value)), 'Invalid date');
 
 const dateFields = {
@@ -17,7 +19,8 @@ function checkDates(data: { startDate: string; endDate: string }, ctx: z.Refinem
       path: ['endDate'],
     });
   }
-  if (Date.parse(data.startDate) < Date.now() - 24 * 60 * 60 * 1000) {
+  // Compare calendar days in local time: picking up today is fine, yesterday isn't.
+  if (data.startDate.slice(0, 10) < toDateString(new Date())) {
     ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Pick-up date cannot be in the past', path: ['startDate'] });
   }
 }

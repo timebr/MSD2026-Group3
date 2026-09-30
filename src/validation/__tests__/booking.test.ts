@@ -1,3 +1,4 @@
+import { toDateString } from '@/utils/date';
 import { bookingFormSchema } from '@/validation/booking';
 
 const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
@@ -43,5 +44,14 @@ describe('bookingFormSchema', () => {
       endDate: dayAfter,
     });
     expect(result.success).toBe(false);
+  });
+
+  it('accepts a pick-up today but not yesterday', () => {
+    const today = toDateString(new Date());
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
+    const base = { pickupLocationId: 'loc-cph-airport', dropoffLocationId: 'loc-cph-airport', endDate: dayAfter };
+    expect(bookingFormSchema.safeParse({ ...base, startDate: today }).success).toBe(true);
+    expect(bookingFormSchema.safeParse({ ...base, startDate: toDateString(yesterdayDate) }).success).toBe(false);
   });
 });
