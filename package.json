@@ -65,6 +65,10 @@
     ],
     "setupFiles": [
       "./jest.setup.js"
-    ]
+    ],
+    "moduleNameMapper": {
+      "^expect/build/matchers$": "<rootDir>/node_modules/@jest/expect/node_modules/expect/build/matchers.js",
+      "\\.css$": "<rootDir>/jest.style-mock.js"
+    }
   }
 }

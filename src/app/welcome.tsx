@@ -43,10 +43,9 @@ export default function WelcomeScreen() {
           </Pressable>
 
           <Pressable
-            onPress={() => {
-              continueAsGuest();
-              router.replace('/');
-            }}
+            // No navigation here: the guarded stack in _layout.tsx switches to
+            // the car list as soon as the guest choice is stored.
+            onPress={continueAsGuest}
             accessibilityRole="button"
             accessibilityLabel="Continue as guest"
           >

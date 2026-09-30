@@ -15,7 +15,8 @@ SplashScreen.preventAutoHideAsync();
 function AppShell() {
   // Kicks off a sync pass on launch and whenever connectivity returns (NFR2).
   useAutoSync();
-  const { ready } = useAuth();
+  const { ready, user, isGuest } = useAuth();
+  const hasEntered = user !== null || isGuest;
 
   // Keep the splash screen up until we know whether someone is logged in, so
   // the welcome screen doesn't flash for returning users.
@@ -31,14 +32,23 @@ function AppShell() {
 
   return (
     <Stack screenOptions={{ headerTitleAlign: 'center' }}>
-      <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      {/*
+        The welcome screen (S3) and the rest of the app are guarded by who is
+        using the app, so choosing "Continue as guest" or logging in only has to
+        update useAuth() and the router moves to the right screen by itself.
+      */}
+      <Stack.Protected guard={!hasEntered}>
+        <Stack.Screen name="welcome" options={{ headerShown: false }} />
+      </Stack.Protected>
+      <Stack.Protected guard={hasEntered}>
+        <Stack.Screen name="index" options={{ title: 'Available cars' }} />
+        <Stack.Screen name="car/[id]" options={{ title: 'Car details' }} />
+        <Stack.Screen name="booking/[carId]" options={{ title: 'Book this car' }} />
+        <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
+        <Stack.Screen name="bookings/index" options={{ title: 'My bookings' }} />
+        <Stack.Screen name="bookings/[id]" options={{ title: 'Booking details' }} />
+      </Stack.Protected>
       <Stack.Screen name="login" options={{ title: 'Account' }} />
-      <Stack.Screen name="index" options={{ title: 'Available cars' }} />
-      <Stack.Screen name="car/[id]" options={{ title: 'Car details' }} />
-      <Stack.Screen name="booking/[carId]" options={{ title: 'Book this car' }} />
-      <Stack.Screen name="checkout" options={{ title: 'Checkout' }} />
-      <Stack.Screen name="bookings/index" options={{ title: 'My bookings' }} />
-      <Stack.Screen name="bookings/[id]" options={{ title: 'Booking details' }} />
     </Stack>
   );
 }
