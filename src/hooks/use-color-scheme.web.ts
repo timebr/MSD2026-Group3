@@ -9,6 +9,7 @@ export function useColorScheme() {
 
   useEffect(() => {
     // Intentional: flips once after mount to detect client-side hydration for web SSR.
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- one-shot hydration flag, runs once on mount
     setHasHydrated(true);
   }, []);
 

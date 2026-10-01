@@ -56,7 +56,7 @@ export function DateField({
           mode="date"
           display="compact"
           minimumDate={minimumDate}
-          onChange={(_event, date) => date && onChange(toDateString(date))}
+          onValueChange={(_event, date) => date && onChange(toDateString(date))}
           accessibilityLabel={accessibilityLabel}
         />
         {!selected && (
@@ -75,7 +75,9 @@ export function DateField({
           value: selected ?? minimumDate,
           mode: 'date',
           minimumDate,
-          onChange: (event, date) => event.type === 'set' && date && onChange(toDateString(date)),
+          // `onValueChange` fires only when the user confirms a date, so the
+          // old `event.type === 'set'` guard is no longer needed.
+          onValueChange: (_event, date) => date && onChange(toDateString(date)),
         })
       }
       accessibilityRole="button"
