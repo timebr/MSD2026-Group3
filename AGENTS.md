@@ -12,10 +12,17 @@ in the group's design document; reference those IDs in PRs and code comments.
 
 ## Hard constraints
 
-- **Expo SDK 54 only.** The course requires it and the app must run in Expo Go
-  for SDK 54. Never bump `expo`, `react-native`, `react` or any `expo-*`
-  package to another SDK. Add native packages with `npx expo install <pkg>` so
-  the SDK 54 compatible version is picked.
+- **Expo SDK 57 only.** The app must run in Expo Go for SDK 57. Never bump
+  `expo`, `react-native`, `react` or any `expo-*` package to another SDK. Add
+  native packages with `npx expo install <pkg>` so the SDK 57 compatible version
+  is picked. Note that a few packages are pinned as direct dependencies to force
+  npm to hoist them (`expo-modules-core`, `@expo/config-plugins`,
+  `@react-native/jest-preset`, `test-renderer`); removing them breaks jest and
+  the config plugins.
+- **Do not import from `@react-navigation/native`.** Since SDK 56 `expo-router`
+  re-exports the theming primitives it needs (`ThemeProvider`, `DarkTheme`,
+  `DefaultTheme`, `useTheme`); importing them from React Navigation directly
+  fails the build. Import them from `expo-router` instead.
 - No custom native code, no `expo prebuild`: everything must work in Expo Go.
 - Never commit secrets. Configuration goes in `.env` (git-ignored); document
   new variables in `.env.example`. Only `EXPO_PUBLIC_*` variables reach the app.

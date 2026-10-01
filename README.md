@@ -5,7 +5,7 @@ design document for objectives, personas, findings, and requirements (FR#/NFR#).
 
 ## Stack
 
-- [Expo](https://expo.dev) **SDK 54** (required by the course, don't upgrade) + [React Native](https://reactnative.dev) 0.81, TypeScript
+- [Expo](https://expo.dev) **SDK 57** + [React Native](https://reactnative.dev) 0.86, TypeScript
 - [Expo Router](https://docs.expo.dev/router/introduction/) (file-based navigation, routes live under `src/app`)
 - [TanStack Query](https://tanstack.com/query) for data fetching/caching, persisted to `AsyncStorage` so cached data survives offline and app restarts (NFR1)
 - `react-hook-form` + `zod` for form validation (NFR5)
@@ -19,7 +19,7 @@ npm start
 ```
 
 Then press `i` (iOS simulator), `a` (Android emulator), or `w` (web) — or scan
-the QR code with Expo Go on a physical device. Expo Go must support SDK 54.
+the QR code with Expo Go. Expo Go must support SDK 57.
 
 ## Contributing
 
