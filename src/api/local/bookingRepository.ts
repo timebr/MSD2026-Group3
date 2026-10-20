@@ -1,11 +1,21 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { CarUnavailableError, type BookingRepository } from '@/api/types';
+import { CarUnavailableError, InvalidPriceError, type BookingRepository } from '@/api/types';
 import { isCarAvailable } from '@/domain/availability';
-import type { Booking, CreateBookingInput, SyncState, UpdateBookingInput } from '@/models/booking';
+import type { Booking, CreateBookingInput, PriceBreakdown, SyncState, UpdateBookingInput } from '@/models/booking';
 import { generateId } from '@/utils/id';
 
 const STORAGE_KEY = 'bookings:v3';
+
+/** Amounts are whole DKK, so anything above a cent of slack means the snapshot was tampered with. */
+const PRICE_TOLERANCE = 0.01;
+
+function assertPriceConsistent(price: PriceBreakdown): void {
+  const sum = price.basePrice + price.insuranceCost + price.fees;
+  if (price.days < 1 || Math.abs(price.totalPrice - sum) > PRICE_TOLERANCE) {
+    throw new InvalidPriceError();
+  }
+}
 
 async function readAll(): Promise<Booking[]> {
   const raw = await AsyncStorage.getItem(STORAGE_KEY);
@@ -63,6 +73,7 @@ export class LocalBookingRepository implements BookingRepository {
 
   createBooking(input: CreateBookingInput): Promise<Booking> {
     return exclusive(async () => {
+      assertPriceConsistent(input.price);
       const bookings = await readAll();
       if (!isCarAvailable(bookings, input.carId, input.startDate, input.endDate)) {
         throw new CarUnavailableError();
@@ -85,6 +96,7 @@ export class LocalBookingRepository implements BookingRepository {
   updateBooking(id: string, patch: UpdateBookingInput): Promise<Booking> {
     return modify(id, (booking, all) => {
       const updated = { ...booking, ...patch };
+      assertPriceConsistent(updated.price);
       if (!isCarAvailable(all, updated.carId, updated.startDate, updated.endDate, id)) {
         throw new CarUnavailableError();
       }
