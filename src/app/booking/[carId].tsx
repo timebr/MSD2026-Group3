@@ -10,7 +10,7 @@ import { PriceSummary } from '@/components/price-summary';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { calculatePrice } from '@/domain/pricing';
+import { calculatePrice, formatMoney } from '@/domain/pricing';
 import { checkAvailability } from '@/hooks/use-bookings';
 import { useCar, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { BookingDraft } from '@/models/booking';
@@ -157,7 +157,7 @@ function BookingForm({
             <ChipGroup
               options={insuranceOptions.map((option) => ({
                 value: option.id,
-                label: `${option.name}${option.pricePerDay > 0 ? ` (+${option.pricePerDay} DKK/day)` : ''}`,
+                label: `${option.name}${option.pricePerDay > 0 ? ` (+${formatMoney(option.pricePerDay)}/day)` : ''}`,
               }))}
               value={field.value}
               onChange={field.onChange}

@@ -3,13 +3,14 @@ import { StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { formatMoney } from '@/domain/pricing';
 import type { PriceBreakdown } from '@/models/booking';
 
 function Line({ label, amount, bold }: { label: string; amount: number; bold?: boolean }) {
   return (
     <ThemedView type="backgroundElement" style={styles.line}>
       <ThemedText type={bold ? 'smallBold' : 'small'}>{label}</ThemedText>
-      <ThemedText type={bold ? 'smallBold' : 'small'}>{amount} DKK</ThemedText>
+      <ThemedText type={bold ? 'smallBold' : 'small'}>{formatMoney(amount)}</ThemedText>
     </ThemedView>
   );
 }
