@@ -38,10 +38,23 @@ describe('paymentFormSchema', () => {
     expect(paymentFormSchema.safeParse({ ...valid, expiryMonth: '13' }).success).toBe(false);
     expect(paymentFormSchema.safeParse({ ...valid, expiryMonth: '6.5' }).success).toBe(false);
     expect(paymentFormSchema.safeParse({ ...valid, expiryMonth: '' }).success).toBe(false);
+
+    const outOfRange = paymentFormSchema.safeParse({ ...valid, expiryMonth: '13' });
+    if (!outOfRange.success) {
+      expect(outOfRange.error.issues[0].message).toBe('Expiry month must be between 1 and 12');
+    }
+    const fraction = paymentFormSchema.safeParse({ ...valid, expiryMonth: '6.5' });
+    if (!fraction.success) {
+      expect(fraction.error.issues[0].message).toBe('Expiry month must be a whole number');
+    }
   });
 
   it('rejects an expiry year before the current year', () => {
-    expect(paymentFormSchema.safeParse({ ...valid, expiryYear: String(currentYear - 1) }).success).toBe(false);
+    const result = paymentFormSchema.safeParse({ ...valid, expiryYear: String(currentYear - 1) });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues[0].message).toBe('Expiry year cannot be in the past');
+    }
   });
 
   it('rejects the current year with a past month as expired', () => {
