@@ -13,6 +13,10 @@ const mockUseSyncStatus = jest.mocked(useSyncStatus);
 const mockUseIsOnline = jest.mocked(useIsOnline);
 const mockRequestSync = jest.mocked(requestSync);
 
+// The first awaited `render` flushes React's pending work, which can exceed the
+// 5s default on a slow filesystem; give the suite the same headroom as navigation.test.
+jest.setTimeout(30000);
+
 describe('SyncStatusBanner', () => {
   beforeEach(() => {
     jest.clearAllMocks();
