@@ -84,6 +84,6 @@ A change is done when:
 3. New logic (validation, repositories, sync, hooks) has tests.
 4. A teammate who did not write or generate the code has reviewed and approved
    it, and can explain it.
-5. It runs in Expo Go (SDK 54) on at least one phone.
+5. It runs in Expo Go (SDK 57) on at least one phone.
 6. AI use is logged in the design document's Appendix A (tool, task, prompt or
    link, how it was verified, decision), and wrong AI output in the failure log.
