@@ -6,6 +6,7 @@ import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
+import { formatMoney } from '@/domain/pricing';
 import { useAuth } from '@/hooks/use-auth';
 import { useMyBookings } from '@/hooks/use-bookings';
 import { useLocationName } from '@/hooks/use-cars';
@@ -89,7 +90,7 @@ export default function BookingsListScreen() {
                   {locationName(item.pickupLocationId)} → {locationName(item.dropoffLocationId)}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
-                  {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {item.price.totalPrice} DKK
+                  {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {formatMoney(item.price.totalPrice)}
                 </ThemedText>
                 <ThemedText type="small">{statusLabel(item)}</ThemedText>
               </ThemedView>

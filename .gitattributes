@@ -1,0 +1,11 @@
+# Normalize to LF in the repository and in every working tree, so Windows
+# checkouts don't turn every file into a whole-file diff (CRLF vs LF).
+* text=auto eol=lf
+
+# Binary assets must never be line-ending converted.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.ttf binary

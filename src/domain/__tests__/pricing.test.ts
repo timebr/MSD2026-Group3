@@ -1,4 +1,12 @@
-import { calculatePrice, dailyPriceRange, formatDailyRange, ONE_WAY_FEE, rentalDays } from '@/domain/pricing';
+import {
+  calculatePrice,
+  CURRENCY,
+  dailyPriceRange,
+  formatDailyRange,
+  formatMoney,
+  ONE_WAY_FEE,
+  rentalDays,
+} from '@/domain/pricing';
 
 const car = { pricePerDay: 50 };
 
@@ -51,5 +59,20 @@ describe('dailyPriceRange', () => {
 
   it('is a single price when there is no paid insurance', () => {
     expect(formatDailyRange(dailyPriceRange({ pricePerDay: 50 }, []))).toBe('50 DKK / day');
+  });
+
+  it('shows both ends of the range when insurance changes the price', () => {
+    expect(formatDailyRange({ min: 29, max: 44 })).toBe('29–44 DKK / day');
+  });
+});
+
+describe('formatMoney', () => {
+  it('renders a whole amount with the DKK currency', () => {
+    expect(formatMoney(150)).toBe('150 DKK');
+    expect(formatMoney(0)).toBe('0 DKK');
+  });
+
+  it('uses the shared currency constant', () => {
+    expect(formatMoney(250)).toBe(`250 ${CURRENCY}`);
   });
 });
