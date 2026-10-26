@@ -16,10 +16,10 @@ export default function WelcomeScreen() {
       <SafeAreaView style={styles.content}>
         <View style={styles.intro}>
           <Text variant="displayMedium" style={styles.title}>
-            Rent a car
+            Carly - Rent a car
           </Text>
           <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
-            Browse cars as a guest, or log in to book. You&apos;ll need an account to place a booking.
+            Browse cars as a guest, or log in to book.
           </Text>
         </View>
 

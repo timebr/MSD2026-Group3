@@ -68,44 +68,45 @@ export default function CarListScreen() {
           </Card>
         )}
 
-        <View style={styles.filters}>
-          <ChipGroup
-            options={locations.map((location) => ({ value: location.id, label: location.name }))}
-            value={locationId}
-            onChange={setLocationId}
-            allowDeselect
-            accessibilityLabel="Pick-up location"
-          />
-
-          <ChipGroup
-            options={TYPE_OPTIONS}
-            value={type}
-            onChange={setType}
-            allowDeselect
-            accessibilityLabel="Car type"
-          />
-
-          <Button
-            mode="outlined"
-            icon={sort === 'price-desc' ? 'sort-descending' : 'sort-ascending'}
-            onPress={() => setSort((current) => (current === 'price-asc' ? 'price-desc' : 'price-asc'))}
-            accessibilityRole="button"
-            accessibilityLabel="Sort by price"
-            style={styles.sortButton}
-          >
-            Sort: {sort === 'price-desc' ? 'price high to low' : 'price low to high'}
-          </Button>
-        </View>
-
-        {isError && (
-          <Text variant="bodySmall">Couldn&apos;t load cars. Pull to refresh once you&apos;re back online.</Text>
-        )}
-
         <FlatList
           data={cars}
           keyExtractor={(car) => car.id}
           renderItem={({ item }) => <CarCard car={item} insuranceOptions={insuranceOptions} />}
           contentContainerStyle={styles.list}
+          ListHeaderComponent={
+            <View style={styles.filters}>
+              <ChipGroup
+                options={locations.map((location) => ({ value: location.id, label: location.name }))}
+                value={locationId}
+                onChange={setLocationId}
+                allowDeselect
+                accessibilityLabel="Pick-up location"
+              />
+
+              <ChipGroup
+                options={TYPE_OPTIONS}
+                value={type}
+                onChange={setType}
+                allowDeselect
+                accessibilityLabel="Car type"
+              />
+
+              <Button
+                mode="outlined"
+                icon={sort === 'price-desc' ? 'sort-descending' : 'sort-ascending'}
+                onPress={() => setSort((current) => (current === 'price-asc' ? 'price-desc' : 'price-asc'))}
+                accessibilityRole="button"
+                accessibilityLabel="Sort by price"
+                style={styles.sortButton}
+              >
+                Sort: {sort === 'price-desc' ? 'price high to low' : 'price low to high'}
+              </Button>
+
+              {isError && (
+                <Text variant="bodySmall">Couldn&apos;t load cars. Pull to refresh once you&apos;re back online.</Text>
+              )}
+            </View>
+          }
           ListEmptyComponent={!isLoading ? <Text variant="bodySmall">No cars match those filters.</Text> : null}
         />
       </SafeAreaView>
