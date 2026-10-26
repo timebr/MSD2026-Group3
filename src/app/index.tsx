@@ -1,13 +1,12 @@
 import { Link, Stack, router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { Button, Card, Surface, Text } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { CarCard } from '@/components/car-card';
 import { ChipGroup } from '@/components/chip-group';
 import { SyncStatusBanner } from '@/components/sync-status-banner';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useCars, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
@@ -28,14 +27,14 @@ export default function CarListScreen() {
   const { data: cars, isLoading, isError } = useCars(filters, sort);
 
   return (
-    <ThemedView style={styles.container}>
+    <Surface style={styles.container} elevation={0}>
       <Stack.Screen
         options={{
           headerRight: () => (
             <Link href="/bookings" asChild>
-              <Pressable accessibilityRole="button" accessibilityLabel="My bookings">
-                <ThemedText themeColor="text">My bookings</ThemedText>
-              </Pressable>
+              <Button mode="text" compact accessibilityRole="button" accessibilityLabel="My bookings">
+                My bookings
+              </Button>
             </Link>
           ),
         }}
@@ -44,30 +43,32 @@ export default function CarListScreen() {
         <SyncStatusBanner />
 
         {confirmedBookingId && (
-          <ThemedView type="backgroundElement" style={styles.confirmedBanner}>
-            <ThemedText type="smallBold">Booking confirmed!</ThemedText>
-            <ThemedView type="backgroundElement" style={styles.confirmedActions}>
-              <Link href={{ pathname: '/bookings/[id]', params: { id: confirmedBookingId } }} asChild>
-                <Pressable accessibilityRole="button" accessibilityLabel="View booking">
-                  <ThemedText type="link" themeColor="text">
+          <Card mode="contained" style={styles.confirmedBanner}>
+            <Card.Content style={styles.confirmedContent}>
+              <Text variant="titleSmall" style={styles.bold}>
+                Booking confirmed!
+              </Text>
+              <View style={styles.confirmedActions}>
+                <Link href={{ pathname: '/bookings/[id]', params: { id: confirmedBookingId } }} asChild>
+                  <Button mode="text" compact accessibilityRole="button" accessibilityLabel="View booking">
                     View booking
-                  </ThemedText>
-                </Pressable>
-              </Link>
-              <Pressable
-                onPress={() => router.setParams({ confirmedBookingId: undefined })}
-                accessibilityRole="button"
-                accessibilityLabel="Dismiss confirmation"
-              >
-                <ThemedText type="link" themeColor="text">
+                  </Button>
+                </Link>
+                <Button
+                  mode="text"
+                  compact
+                  onPress={() => router.setParams({ confirmedBookingId: undefined })}
+                  accessibilityRole="button"
+                  accessibilityLabel="Dismiss confirmation"
+                >
                   Dismiss
-                </ThemedText>
-              </Pressable>
-            </ThemedView>
-          </ThemedView>
+                </Button>
+              </View>
+            </Card.Content>
+          </Card>
         )}
 
-        <ThemedView style={styles.filters}>
+        <View style={styles.filters}>
           <ChipGroup
             options={locations.map((location) => ({ value: location.id, label: location.name }))}
             value={locationId}
@@ -84,19 +85,20 @@ export default function CarListScreen() {
             accessibilityLabel="Car type"
           />
 
-          <Pressable
+          <Button
+            mode="outlined"
+            icon={sort === 'price-desc' ? 'sort-descending' : 'sort-ascending'}
             onPress={() => setSort((current) => (current === 'price-asc' ? 'price-desc' : 'price-asc'))}
             accessibilityRole="button"
             accessibilityLabel="Sort by price"
+            style={styles.sortButton}
           >
-            <ThemedText type="link" themeColor="text">
-              Sort: {sort === 'price-desc' ? 'price high to low' : 'price low to high'}
-            </ThemedText>
-          </Pressable>
-        </ThemedView>
+            Sort: {sort === 'price-desc' ? 'price high to low' : 'price low to high'}
+          </Button>
+        </View>
 
         {isError && (
-          <ThemedText type="small">Couldn&apos;t load cars. Pull to refresh once you&apos;re back online.</ThemedText>
+          <Text variant="bodySmall">Couldn&apos;t load cars. Pull to refresh once you&apos;re back online.</Text>
         )}
 
         <FlatList
@@ -104,10 +106,10 @@ export default function CarListScreen() {
           keyExtractor={(car) => car.id}
           renderItem={({ item }) => <CarCard car={item} insuranceOptions={insuranceOptions} />}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={!isLoading ? <ThemedText type="small">No cars match those filters.</ThemedText> : null}
+          ListEmptyComponent={!isLoading ? <Text variant="bodySmall">No cars match those filters.</Text> : null}
         />
       </SafeAreaView>
-    </ThemedView>
+    </Surface>
   );
 }
 
@@ -121,17 +123,24 @@ const styles = StyleSheet.create({
   },
   confirmedBanner: {
     borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.two,
     marginTop: Spacing.two,
+  },
+  confirmedContent: {
+    gap: Spacing.one,
   },
   confirmedActions: {
     flexDirection: 'row',
-    gap: Spacing.four,
+    gap: Spacing.two,
+  },
+  bold: {
+    fontWeight: '700',
   },
   filters: {
     gap: Spacing.two,
     paddingVertical: Spacing.three,
+  },
+  sortButton: {
+    alignSelf: 'flex-start',
   },
   list: {
     paddingBottom: Spacing.four,

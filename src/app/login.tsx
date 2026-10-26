@@ -2,15 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, TextInput, type TextInputProps } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, HelperText, Surface, TextInput, type TextInputProps } from 'react-native-paper';
 import { z } from 'zod';
 
 import { EmailTakenError, InvalidCredentialsError } from '@/api/types';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/hooks/use-theme';
 import { logInSchema, signUpSchema, type SignUpValues } from '@/validation/auth';
 
 type Mode = 'login' | 'signup';
@@ -37,7 +35,6 @@ function AuthForm({
   onSwitchMode: (mode: Mode) => void;
   fromWelcome: boolean;
 }) {
-  const theme = useTheme();
   const { logIn, signUp } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isSignUp = mode === 'signup';
@@ -74,84 +71,86 @@ function AuthForm({
     }
   };
 
-  const field = (name: keyof SignUpValues, label: string, props: TextInputProps = {}) => (
-    <ThemedView style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+  const field = (name: keyof SignUpValues, label: string, props: Partial<TextInputProps> = {}) => (
+    <View style={styles.field}>
       <Controller
         control={control}
         name={name}
         render={({ field: { value, onChange } }) => (
           <TextInput
+            mode="outlined"
+            label={label}
             value={value}
             onChangeText={onChange}
-            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
+            error={Boolean(errors[name])}
             accessibilityLabel={label}
             {...props}
           />
         )}
       />
-      {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
-    </ThemedView>
+      {errors[name] && (
+        <HelperText type="error" padding="none">
+          {errors[name]?.message}
+        </HelperText>
+      )}
+    </View>
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-      <Stack.Screen options={{ title: isSignUp ? 'Create account' : 'Log in' }} />
+    <Surface style={styles.container} elevation={0}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <Stack.Screen options={{ title: isSignUp ? 'Create account' : 'Log in' }} />
 
-      {isSignUp && field('name', 'Name', { autoComplete: 'name' })}
-      {field('email', 'Email', { autoCapitalize: 'none', autoComplete: 'email', keyboardType: 'email-address' })}
-      {field('password', 'Password', {
-        secureTextEntry: true,
-        autoComplete: isSignUp ? 'new-password' : 'current-password',
-      })}
+        {isSignUp && field('name', 'Name', { autoComplete: 'name' })}
+        {field('email', 'Email', { autoCapitalize: 'none', autoComplete: 'email', keyboardType: 'email-address' })}
+        {field('password', 'Password', {
+          secureTextEntry: true,
+          autoComplete: isSignUp ? 'new-password' : 'current-password',
+        })}
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+        {submitError && (
+          <HelperText type="error" padding="none">
+            {submitError}
+          </HelperText>
+        )}
 
-      <Pressable
-        onPress={handleSubmit(onSubmit)}
-        disabled={isSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel={isSignUp ? 'Create account' : 'Log in'}
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">{isSignUp ? 'Create account' : 'Log in'}</ThemedText>
-        </ThemedView>
-      </Pressable>
+        <Button
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel={isSignUp ? 'Create account' : 'Log in'}
+          contentStyle={styles.buttonContent}
+        >
+          {isSignUp ? 'Create account' : 'Log in'}
+        </Button>
 
-      <Pressable
-        onPress={() => onSwitchMode(isSignUp ? 'login' : 'signup')}
-        accessibilityRole="button"
-        accessibilityLabel={isSignUp ? 'I already have an account' : 'Create a new account'}
-      >
-        <ThemedText type="link" style={styles.switch}>
+        <Button
+          mode="text"
+          onPress={() => onSwitchMode(isSignUp ? 'login' : 'signup')}
+          accessibilityRole="button"
+          accessibilityLabel={isSignUp ? 'I already have an account' : 'Create a new account'}
+        >
           {isSignUp ? 'Already have an account? Log in' : 'New here? Create an account'}
-        </ThemedText>
-      </Pressable>
-    </ScrollView>
+        </Button>
+      </ScrollView>
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   content: {
     padding: Spacing.three,
     gap: Spacing.three,
   },
   field: {
-    gap: Spacing.one,
+    gap: Spacing.half,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
-  submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-  },
-  switch: {
-    textAlign: 'center',
+  buttonContent: {
+    paddingVertical: Spacing.one,
   },
 });

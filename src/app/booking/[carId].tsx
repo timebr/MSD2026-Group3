@@ -2,13 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, HelperText, Surface, Text } from 'react-native-paper';
 
 import { ChipGroup } from '@/components/chip-group';
 import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { calculatePrice } from '@/domain/pricing';
 import { checkAvailability } from '@/hooks/use-bookings';
@@ -27,17 +26,18 @@ export default function BookingFormScreen() {
 
   if (isLoading || !locations || !insuranceOptions) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Loading…</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <ActivityIndicator />
+        <Text variant="bodyMedium">Loading…</Text>
+      </Surface>
     );
   }
 
   if (!car) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Car not found.</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <Text variant="bodyLarge">Car not found.</Text>
+      </Surface>
     );
   }
 
@@ -94,102 +94,134 @@ function BookingForm({
   };
 
   const dateInput = (name: 'startDate' | 'endDate', label: string) => (
-    <ThemedView style={styles.field}>
-      <ThemedText type="smallBold">{label}</ThemedText>
+    <View style={styles.field}>
+      <Text variant="titleSmall" style={styles.bold}>
+        {label}
+      </Text>
       <Controller
         control={control}
         name={name}
         render={({ field }) => <DateField value={field.value} onChange={field.onChange} accessibilityLabel={label} />}
       />
-      {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
-    </ThemedView>
+      {errors[name] && (
+        <HelperText type="error" padding="none">
+          {errors[name]?.message}
+        </HelperText>
+      )}
+    </View>
   );
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <ThemedText type="subtitle">
-        {car.brand} {car.model}
-      </ThemedText>
+    <Surface style={styles.container} elevation={0}>
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text variant="headlineSmall" style={styles.bold}>
+          {car.brand} {car.model}
+        </Text>
 
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Pick-up location</ThemedText>
-        <Controller
-          control={control}
-          name="pickupLocationId"
-          render={({ field }) => (
-            <ChipGroup
-              options={locationOptions}
-              value={field.value}
-              onChange={field.onChange}
-              accessibilityLabel="Pick-up location"
-            />
+        <View style={styles.field}>
+          <Text variant="titleSmall" style={styles.bold}>
+            Pick-up location
+          </Text>
+          <Controller
+            control={control}
+            name="pickupLocationId"
+            render={({ field }) => (
+              <ChipGroup
+                options={locationOptions}
+                value={field.value}
+                onChange={field.onChange}
+                accessibilityLabel="Pick-up location"
+              />
+            )}
+          />
+          {errors.pickupLocationId && (
+            <HelperText type="error" padding="none">
+              {errors.pickupLocationId.message}
+            </HelperText>
           )}
-        />
-        {errors.pickupLocationId && <ThemedText type="small">{errors.pickupLocationId.message}</ThemedText>}
-      </ThemedView>
+        </View>
 
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Drop-off location</ThemedText>
-        <Controller
-          control={control}
-          name="dropoffLocationId"
-          render={({ field }) => (
-            <ChipGroup
-              options={locationOptions}
-              value={field.value}
-              onChange={field.onChange}
-              accessibilityLabel="Drop-off location"
-            />
+        <View style={styles.field}>
+          <Text variant="titleSmall" style={styles.bold}>
+            Drop-off location
+          </Text>
+          <Controller
+            control={control}
+            name="dropoffLocationId"
+            render={({ field }) => (
+              <ChipGroup
+                options={locationOptions}
+                value={field.value}
+                onChange={field.onChange}
+                accessibilityLabel="Drop-off location"
+              />
+            )}
+          />
+          {errors.dropoffLocationId && (
+            <HelperText type="error" padding="none">
+              {errors.dropoffLocationId.message}
+            </HelperText>
           )}
-        />
-        {errors.dropoffLocationId && <ThemedText type="small">{errors.dropoffLocationId.message}</ThemedText>}
-      </ThemedView>
+        </View>
 
-      {dateInput('startDate', 'Pick-up date')}
-      {dateInput('endDate', 'Return date')}
+        {dateInput('startDate', 'Pick-up date')}
+        {dateInput('endDate', 'Return date')}
 
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Insurance</ThemedText>
-        <Controller
-          control={control}
-          name="insuranceId"
-          render={({ field }) => (
-            <ChipGroup
-              options={insuranceOptions.map((option) => ({
-                value: option.id,
-                label: `${option.name}${option.pricePerDay > 0 ? ` (+${option.pricePerDay} DKK/day)` : ''}`,
-              }))}
-              value={field.value}
-              onChange={field.onChange}
-              accessibilityLabel="Insurance"
-            />
-          )}
-        />
-      </ThemedView>
+        <View style={styles.field}>
+          <Text variant="titleSmall" style={styles.bold}>
+            Insurance
+          </Text>
+          <Controller
+            control={control}
+            name="insuranceId"
+            render={({ field }) => (
+              <ChipGroup
+                options={insuranceOptions.map((option) => ({
+                  value: option.id,
+                  label: `${option.name}${option.pricePerDay > 0 ? ` (+${option.pricePerDay} DKK/day)` : ''}`,
+                }))}
+                value={field.value}
+                onChange={field.onChange}
+                accessibilityLabel="Insurance"
+              />
+            )}
+          />
+        </View>
 
-      {preview.success && <PriceSummary price={priceFor(preview.data)} />}
+        {preview.success && <PriceSummary price={priceFor(preview.data)} />}
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+        {submitError && (
+          <HelperText type="error" padding="none">
+            {submitError}
+          </HelperText>
+        )}
 
-      <Pressable
-        onPress={handleSubmit(onSubmit)}
-        disabled={isSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel="Continue to checkout"
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">Continue to checkout</ThemedText>
-        </ThemedView>
-      </Pressable>
-    </ScrollView>
+        <Button
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          loading={isSubmitting}
+          disabled={isSubmitting}
+          accessibilityRole="button"
+          accessibilityLabel="Continue to checkout"
+          style={styles.submitButton}
+          contentStyle={styles.submitButtonContent}
+        >
+          Continue to checkout
+        </Button>
+      </ScrollView>
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.two,
   },
   content: {
     padding: Spacing.three,
@@ -198,10 +230,13 @@ const styles = StyleSheet.create({
   field: {
     gap: Spacing.one,
   },
+  bold: {
+    fontWeight: '700',
+  },
   submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
     marginTop: Spacing.two,
+  },
+  submitButtonContent: {
+    paddingVertical: Spacing.one,
   },
 });

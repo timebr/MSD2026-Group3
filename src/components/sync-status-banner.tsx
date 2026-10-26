@@ -1,7 +1,6 @@
-import { Pressable, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
+import { Button, Surface, Text, useTheme } from 'react-native-paper';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useSyncStatus } from '@/hooks/use-bookings';
 import { useIsOnline } from '@/offline/connectivity';
@@ -9,6 +8,7 @@ import { requestSync } from '@/offline/syncManager';
 
 /** Makes booking sync state visible to the user, per NFR3. */
 export function SyncStatusBanner() {
+  const theme = useTheme();
   const isOnline = useIsOnline();
   const { pending, failed } = useSyncStatus();
 
@@ -23,17 +23,27 @@ export function SyncStatusBanner() {
       ? `${plural(failed)} failed to sync.`
       : `Syncing ${plural(pending)}…`;
 
+  const containerColor = failed > 0 ? theme.colors.errorContainer : theme.colors.secondaryContainer;
+  const textColor = failed > 0 ? theme.colors.onErrorContainer : theme.colors.onSecondaryContainer;
+
   return (
-    <ThemedView type="backgroundElement" style={styles.banner}>
-      <ThemedText type="small" style={styles.message}>
+    <Surface elevation={1} style={[styles.banner, { backgroundColor: containerColor }]}>
+      <Text variant="bodySmall" style={[styles.message, { color: textColor }]}>
         {message}
-      </ThemedText>
+      </Text>
       {isOnline && failed > 0 && (
-        <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
-          <ThemedText type="smallBold">Retry</ThemedText>
-        </Pressable>
+        <Button
+          mode="text"
+          compact
+          textColor={textColor}
+          onPress={() => requestSync()}
+          accessibilityRole="button"
+          accessibilityLabel="Retry sync"
+        >
+          Retry
+        </Button>
       )}
-    </ThemedView>
+    </Surface>
   );
 }
 
@@ -44,6 +54,8 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     paddingVertical: Spacing.two,
     paddingHorizontal: Spacing.three,
+    borderRadius: Spacing.two,
+    marginTop: Spacing.two,
   },
   message: {
     flex: 1,

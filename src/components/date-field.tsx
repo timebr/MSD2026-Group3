@@ -1,10 +1,8 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { Platform, Pressable, StyleSheet, TextInput } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
+import { Button, Text, TextInput, useTheme } from 'react-native-paper';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { useTheme } from '@/hooks/use-theme';
 import { toDateString } from '@/utils/date';
 
 function fromDateString(value: string): Date | undefined {
@@ -38,11 +36,10 @@ export function DateField({
   if (Platform.OS === 'web') {
     return (
       <TextInput
+        mode="outlined"
         value={value}
         onChangeText={onChange}
         placeholder="YYYY-MM-DD"
-        placeholderTextColor={theme.textSecondary}
-        style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
         accessibilityLabel={accessibilityLabel}
       />
     );
@@ -50,7 +47,7 @@ export function DateField({
 
   if (Platform.OS === 'ios') {
     return (
-      <ThemedView style={styles.iosRow}>
+      <View style={styles.iosRow}>
         <DateTimePicker
           value={selected ?? minimumDate}
           mode="date"
@@ -60,16 +57,18 @@ export function DateField({
           accessibilityLabel={accessibilityLabel}
         />
         {!selected && (
-          <ThemedText type="small" themeColor="textSecondary">
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
             Tap to choose
-          </ThemedText>
+          </Text>
         )}
-      </ThemedView>
+      </View>
     );
   }
 
   return (
-    <Pressable
+    <Button
+      mode="outlined"
+      icon="calendar"
       onPress={() =>
         DateTimePickerAndroid.open({
           value: selected ?? minimumDate,
@@ -82,21 +81,17 @@ export function DateField({
       }
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
+      contentStyle={styles.androidButtonContent}
     >
-      <ThemedView style={[styles.input, { borderColor: theme.backgroundSelected }]}>
-        <ThemedText themeColor={selected ? 'text' : 'textSecondary'}>{selected ? value : 'Choose a date'}</ThemedText>
-      </ThemedView>
-    </Pressable>
+      {selected ? value : 'Choose a date'}
+    </Button>
   );
 }
 
 const styles = StyleSheet.create({
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
+  androidButtonContent: {
+    justifyContent: 'flex-start',
+    paddingVertical: Spacing.one,
   },
   iosRow: {
     flexDirection: 'row',

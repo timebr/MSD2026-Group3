@@ -1,17 +1,40 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 // Since SDK 56, expo-router owns these re-exports of the React Navigation
 // theming primitives; importing from @react-navigation/native is an error.
-import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
+import { Stack, ThemeProvider } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { useEffect } from 'react';
-import { useColorScheme } from 'react-native';
+import { type ComponentProps, useEffect } from 'react';
+import { Text, useColorScheme } from 'react-native';
+import { PaperProvider } from 'react-native-paper';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { persistOptions, queryClient } from '@/api/queryClient';
+import { navigationDarkTheme, navigationLightTheme, paperDarkTheme, paperLightTheme } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { useAutoSync } from '@/offline/syncManager';
 
 SplashScreen.preventAutoHideAsync();
+
+const ICON_GLYPHS: Record<string, string> = {
+  check: '✓',
+  'sort-ascending': '↑',
+  'sort-descending': '↓',
+  calendar: '📅',
+  close: '✕',
+  'close-circle': '✕',
+};
+
+const paperSettings: ComponentProps<typeof PaperProvider>['settings'] = {
+  icon: ({ name, color, size, testID }) => (
+    <Text
+      selectable={false}
+      testID={testID}
+      style={{ color, fontSize: size * 0.8, lineHeight: size, textAlign: 'center' }}
+    >
+      {ICON_GLYPHS[String(name)] ?? '•'}
+    </Text>
+  ),
+};
 
 function AppShell() {
   // Kicks off a sync pass on launch and whenever connectivity returns (NFR2).
@@ -56,15 +79,18 @@ function AppShell() {
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
+  const isDark = colorScheme === 'dark';
 
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-          <AuthProvider>
-            <AppShell />
-          </AuthProvider>
-        </ThemeProvider>
+        <PaperProvider theme={isDark ? paperDarkTheme : paperLightTheme} settings={paperSettings}>
+          <ThemeProvider value={isDark ? navigationDarkTheme : navigationLightTheme}>
+            <AuthProvider>
+              <AppShell />
+            </AuthProvider>
+          </ThemeProvider>
+        </PaperProvider>
       </SafeAreaProvider>
     </PersistQueryClientProvider>
   );

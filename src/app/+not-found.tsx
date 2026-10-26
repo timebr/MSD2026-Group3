@@ -1,20 +1,19 @@
 import { Link, Stack } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { Button, Surface, Text } from 'react-native-paper';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 
 export default function NotFoundScreen() {
   return (
     <>
       <Stack.Screen options={{ title: 'Not found' }} />
-      <ThemedView style={styles.container}>
-        <ThemedText type="title">This screen doesn&apos;t exist.</ThemedText>
-        <Link href="/">
-          <ThemedText type="link">Go to the car list</ThemedText>
+      <Surface style={styles.container} elevation={0}>
+        <Text variant="headlineMedium">This screen doesn&apos;t exist.</Text>
+        <Link href="/" asChild>
+          <Button mode="contained">Go to the car list</Button>
         </Link>
-      </ThemedView>
+      </Surface>
     </>
   );
 }
