@@ -11,7 +11,7 @@ import { Spacing } from '@/constants/theme';
 import { useCars, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
 
-const CAR_TYPES: CarType[] = ['city', 'suv', 'estate', 'van', 'luxury'];
+const CAR_TYPES: CarType[] = ['City', 'SUV', 'Estate', 'Van', 'Luxury'];
 const TYPE_OPTIONS = CAR_TYPES.map((carType) => ({ value: carType, label: carType }));
 
 export default function CarListScreen() {
