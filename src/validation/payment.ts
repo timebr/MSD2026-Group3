@@ -9,8 +9,15 @@ export const paymentFormSchema = z
       .string()
       .trim()
       .regex(/^\d{16}$/, 'Card number must be 16 digits'),
-    expiryMonth: z.coerce.number().int().min(1).max(12),
-    expiryYear: z.coerce.number().int().min(new Date().getFullYear()),
+    expiryMonth: z.coerce
+      .number({ invalid_type_error: 'Expiry month is required' })
+      .int('Expiry month must be a whole number')
+      .min(1, 'Expiry month must be between 1 and 12')
+      .max(12, 'Expiry month must be between 1 and 12'),
+    expiryYear: z.coerce
+      .number({ invalid_type_error: 'Expiry year is required' })
+      .int('Expiry year must be a whole number')
+      .min(new Date().getFullYear(), 'Expiry year cannot be in the past'),
     cvv: z
       .string()
       .trim()

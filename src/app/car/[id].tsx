@@ -5,7 +5,7 @@ import { Pressable, ScrollView, StyleSheet } from 'react-native';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
-import { dailyPriceRange, formatDailyRange } from '@/domain/pricing';
+import { dailyPriceRange, formatDailyRange, formatMoney } from '@/domain/pricing';
 import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
 
 export default function CarDetailScreen() {
@@ -56,8 +56,8 @@ export default function CarDetailScreen() {
             <ThemedView key={option.id} style={styles.insuranceRow}>
               <ThemedText type="small">{option.name}</ThemedText>
               <ThemedText type="small" themeColor="textSecondary">
-                {option.coverage} · {option.deductible} DKK deductible
-                {option.pricePerDay > 0 ? ` · +${option.pricePerDay} DKK/day` : ''}
+                {option.coverage} · {formatMoney(option.deductible)} deductible
+                {option.pricePerDay > 0 ? ` · +${formatMoney(option.pricePerDay)}/day` : ''}
               </ThemedText>
             </ThemedView>
           ))}

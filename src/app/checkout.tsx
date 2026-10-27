@@ -55,11 +55,11 @@ export default function CheckoutScreen() {
 
   // The card fields are only validated (mock checkout, FR6) and then discarded;
   // the booking stores method, amount and status like the data model's Payment.
-  const onSubmit = async (_card: PaymentFormValues) => {
+  const onSubmit = async () => {
     setSubmitError(null);
     if (!user) {
       // Guests can browse, but a booking needs an account ("Tap Pay + not logged in" → S3).
-      router.push({ pathname: '/login', params: { mode: 'signup' } });
+      router.push({ pathname: '/login', params: { mode: 'login' } });
       return;
     }
     try {
