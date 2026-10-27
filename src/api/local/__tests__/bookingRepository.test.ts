@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { LocalBookingRepository } from '@/api/local/bookingRepository';
-import { CarUnavailableError } from '@/api/types';
+import { CarUnavailableError, InvalidPriceError } from '@/api/types';
 import type { CreateBookingInput } from '@/models/booking';
 
 const input: CreateBookingInput = {
@@ -33,6 +33,28 @@ describe('LocalBookingRepository', () => {
     await expect(repository.createBooking({ ...input, startDate: '2026-10-07' })).rejects.toBeInstanceOf(
       CarUnavailableError,
     );
+  });
+
+  it('refuses a booking whose total does not match its parts', async () => {
+    await expect(
+      repository.createBooking({ ...input, price: { ...input.price, totalPrice: 160 } }),
+    ).rejects.toBeInstanceOf(InvalidPriceError);
+    expect(await repository.listBookings()).toHaveLength(0);
+    await expect(repository.createBooking(input)).resolves.toMatchObject({ status: 'confirmed' });
+  });
+
+  it('refuses a booking for less than one day', async () => {
+    await expect(repository.createBooking({ ...input, price: { ...input.price, days: 0 } })).rejects.toBeInstanceOf(
+      InvalidPriceError,
+    );
+  });
+
+  it('refuses to update a booking with an inconsistent price', async () => {
+    const created = await repository.createBooking(input);
+    await expect(
+      repository.updateBooking(created.id, { price: { ...input.price, basePrice: 160 } }),
+    ).rejects.toBeInstanceOf(InvalidPriceError);
+    expect((await repository.getBooking(created.id))?.price).toEqual(input.price);
   });
 
   it('allows the dates again once the booking is cancelled', async () => {

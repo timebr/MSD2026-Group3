@@ -27,6 +27,14 @@ export class CarUnavailableError extends Error {
   }
 }
 
+/** Thrown when a booking carries a price snapshot whose parts do not add up. */
+export class InvalidPriceError extends Error {
+  constructor() {
+    super('The price breakdown for this booking is inconsistent.');
+    this.name = 'InvalidPriceError';
+  }
+}
+
 /**
  * Data-source-agnostic contract for reading/writing bookings.
  *
@@ -39,9 +47,9 @@ export interface BookingRepository {
   listBookings(): Promise<Booking[]>;
   getBooking(id: string): Promise<Booking | undefined>;
   isAvailable(carId: string, startDate: string, endDate: string, ignoreBookingId?: string): Promise<boolean>;
-  /** @throws CarUnavailableError */
+  /** @throws CarUnavailableError, InvalidPriceError */
   createBooking(input: CreateBookingInput): Promise<Booking>;
-  /** @throws CarUnavailableError */
+  /** @throws CarUnavailableError, InvalidPriceError */
   updateBooking(id: string, patch: UpdateBookingInput): Promise<Booking>;
   cancelBooking(id: string): Promise<Booking>;
 }

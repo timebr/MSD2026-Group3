@@ -4,7 +4,7 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Divider, Surface, Text, useTheme } from 'react-native-paper';
 
 import { Spacing } from '@/constants/theme';
-import { dailyPriceRange, formatDailyRange } from '@/domain/pricing';
+import { dailyPriceRange, formatDailyRange, formatMoney } from '@/domain/pricing';
 import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
 
 export default function CarDetailScreen() {
@@ -68,8 +68,8 @@ export default function CarDetailScreen() {
                     {option.name}
                   </Text>
                   <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                    {option.coverage} · {option.deductible} DKK deductible
-                    {option.pricePerDay > 0 ? ` · +${option.pricePerDay} DKK/day` : ''}
+                    {option.coverage} · {formatMoney(option.deductible)} deductible
+                    {option.pricePerDay > 0 ? ` · +${formatMoney(option.pricePerDay)}/day` : ''}
                   </Text>
                 </View>
               ))}

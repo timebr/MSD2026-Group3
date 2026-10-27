@@ -30,6 +30,12 @@ export function calculatePrice(params: {
   return { days, basePrice, insuranceCost, fees, totalPrice: basePrice + insuranceCost + fees };
 }
 
+export const CURRENCY = 'DKK';
+
+export function formatMoney(amount: number): string {
+  return `${amount} ${CURRENCY}`;
+}
+
 /**
  * Per-day price range shown before dates are chosen: from the car alone to the
  * car with the most expensive insurance (FE#2: no surprises at checkout).
@@ -43,5 +49,5 @@ export function dailyPriceRange(
 }
 
 export function formatDailyRange(range: { min: number; max: number }): string {
-  return range.min === range.max ? `${range.min} DKK / day` : `${range.min}–${range.max} DKK / day`;
+  return range.min === range.max ? `${formatMoney(range.min)} / day` : `${range.min}–${range.max} ${CURRENCY} / day`;
 }

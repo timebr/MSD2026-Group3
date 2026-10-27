@@ -5,6 +5,7 @@ import { Button, Card, Surface, Switch, Text, useTheme } from 'react-native-pape
 
 import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { Spacing } from '@/constants/theme';
+import { formatMoney } from '@/domain/pricing';
 import { useAuth } from '@/hooks/use-auth';
 import { useMyBookings } from '@/hooks/use-bookings';
 import { useLocationName } from '@/hooks/use-cars';
@@ -99,7 +100,7 @@ export default function BookingsListScreen() {
                     {locationName(item.pickupLocationId)} → {locationName(item.dropoffLocationId)}
                   </Text>
                   <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
-                    {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {item.price.totalPrice} DKK
+                    {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {formatMoney(item.price.totalPrice)}
                   </Text>
                   <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
                     {statusLabel(item)}

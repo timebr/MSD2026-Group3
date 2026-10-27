@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { Card, Divider, Text } from 'react-native-paper';
 
 import { Spacing } from '@/constants/theme';
+import { formatMoney } from '@/domain/pricing';
 import type { PriceBreakdown } from '@/models/booking';
 
 function Line({ label, amount, bold }: { label: string; amount: number; bold?: boolean }) {
@@ -11,7 +12,7 @@ function Line({ label, amount, bold }: { label: string; amount: number; bold?: b
         {label}
       </Text>
       <Text variant={bold ? 'titleMedium' : 'bodyMedium'} style={bold ? styles.bold : undefined}>
-        {amount} DKK
+        {formatMoney(amount)}
       </Text>
     </View>
   );
