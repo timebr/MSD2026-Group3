@@ -16,7 +16,7 @@ export default function WelcomeScreen() {
       <SafeAreaView style={styles.content}>
         <View style={styles.intro}>
           <Text variant="displayMedium" style={styles.title}>
-            Carly - Rent a car
+            Carsly - Rent a car
           </Text>
           <Text variant="bodyLarge" style={{ color: theme.colors.onSurfaceVariant }}>
             Browse cars as a guest, or log in to book.
