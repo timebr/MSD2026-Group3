@@ -1,4 +1,5 @@
-import { View, type ViewProps } from 'react-native';
+import { type ViewProps } from 'react-native';
+import { Surface } from 'react-native-paper';
 
 import { ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
@@ -9,8 +10,12 @@ export type ThemedViewProps = ViewProps & {
   type?: ThemeColor;
 };
 
-export function ThemedView({ style, lightColor, darkColor, type, ...otherProps }: ThemedViewProps) {
+export function ThemedView({ style, lightColor, darkColor, type, children, ...otherProps }: ThemedViewProps) {
   const theme = useTheme();
 
-  return <View style={[{ backgroundColor: theme[type ?? 'background'] }, style]} {...otherProps} />;
+  return (
+    <Surface elevation={0} style={[{ backgroundColor: theme[type ?? 'background'] }, style]} {...otherProps}>
+      {children}
+    </Surface>
+  );
 }

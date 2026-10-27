@@ -1,9 +1,8 @@
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Card, Divider, Surface, Text, useTheme } from 'react-native-paper';
 
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { dailyPriceRange, formatDailyRange, formatMoney } from '@/domain/pricing';
 import { useCar, useInsurance, useLocationName } from '@/hooks/use-cars';
@@ -13,80 +12,104 @@ export default function CarDetailScreen() {
   const { data: car, isLoading } = useCar(id);
   const { data: insuranceOptions = [] } = useInsurance();
   const locationName = useLocationName();
+  const theme = useTheme();
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Loading…</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <ActivityIndicator />
+        <Text variant="bodyMedium">Loading…</Text>
+      </Surface>
     );
   }
 
   if (!car) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Car not found.</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <Text variant="bodyLarge">Car not found.</Text>
+      </Surface>
     );
   }
 
   return (
-    <ScrollView>
-      <Image source={{ uri: car.imageUrl }} style={styles.image} contentFit="cover" />
-      <ThemedView style={styles.content}>
-        <ThemedText type="title">
-          {car.brand} {car.model}
-        </ThemedText>
-        <ThemedText themeColor="textSecondary">
-          {car.type} · {car.fuelType} · {car.transmission} · {car.seats} seats
-        </ThemedText>
-        <ThemedText>{car.description}</ThemedText>
-        <ThemedText type="small" themeColor="textSecondary">
-          Pick up at {locationName(car.locationId)}
-        </ThemedText>
+    <Surface style={styles.container} elevation={0}>
+      <ScrollView>
+        <Image source={{ uri: car.imageUrl }} style={styles.image} contentFit="cover" />
+        <View style={styles.content}>
+          <Text variant="headlineMedium" style={styles.bold}>
+            {car.brand} {car.model}
+          </Text>
+          <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            {car.type} · {car.fuelType} · {car.transmission} · {car.seats} seats
+          </Text>
+          <Text variant="bodyLarge">{car.description}</Text>
+          <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+            Pick up at {locationName(car.locationId)}
+          </Text>
 
-        <ThemedView type="backgroundElement" style={styles.section}>
-          <ThemedText type="smallBold">Fuel policy</ThemedText>
-          <ThemedText type="small">{car.fuelPolicy.replace(/-/g, ' ')}</ThemedText>
-        </ThemedView>
+          <Card mode="contained" style={styles.section}>
+            <Card.Content style={styles.cardContent}>
+              <Text variant="titleSmall" style={styles.bold}>
+                Fuel policy
+              </Text>
+              <Text variant="bodyMedium">{car.fuelPolicy.replace(/-/g, ' ')}</Text>
+            </Card.Content>
+          </Card>
 
-        <ThemedView type="backgroundElement" style={styles.section}>
-          <ThemedText type="smallBold">Insurance options</ThemedText>
-          {insuranceOptions.map((option) => (
-            <ThemedView key={option.id} style={styles.insuranceRow}>
-              <ThemedText type="small">{option.name}</ThemedText>
-              <ThemedText type="small" themeColor="textSecondary">
-                {option.coverage} · {formatMoney(option.deductible)} deductible
-                {option.pricePerDay > 0 ? ` · +${formatMoney(option.pricePerDay)}/day` : ''}
-              </ThemedText>
-            </ThemedView>
-          ))}
-        </ThemedView>
+          <Card mode="contained" style={styles.section}>
+            <Card.Content style={styles.cardContent}>
+              <Text variant="titleSmall" style={styles.bold}>
+                Insurance options
+              </Text>
+              {insuranceOptions.map((option, index) => (
+                <View key={option.id} style={styles.insuranceRow}>
+                  {index > 0 && <Divider style={styles.divider} />}
+                  <Text variant="bodyMedium" style={styles.bold}>
+                    {option.name}
+                  </Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {option.coverage} · {formatMoney(option.deductible)} deductible
+                    {option.pricePerDay > 0 ? ` · +${formatMoney(option.pricePerDay)}/day` : ''}
+                  </Text>
+                </View>
+              ))}
+            </Card.Content>
+          </Card>
 
-        <ThemedView style={styles.priceBlock}>
-          <ThemedText type="subtitle">{formatDailyRange(dailyPriceRange(car, insuranceOptions))}</ThemedText>
-          <ThemedText type="small" themeColor="textSecondary">
-            From the car alone to the car with full insurance. A one-way fee applies if you return it elsewhere.
-          </ThemedText>
-        </ThemedView>
+          <View style={styles.priceBlock}>
+            <Text variant="headlineSmall" style={[styles.bold, { color: theme.colors.primary }]}>
+              {formatDailyRange(dailyPriceRange(car, insuranceOptions))}
+            </Text>
+            <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+              From the car alone to the car with full insurance. A one-way fee applies if you return it elsewhere.
+            </Text>
+          </View>
 
-        <Link href={{ pathname: '/booking/[carId]', params: { carId: car.id } }} asChild>
-          <Pressable accessibilityRole="button" accessibilityLabel="Book this car">
-            <ThemedView type="backgroundSelected" style={styles.bookButton}>
-              <ThemedText type="smallBold">Book this car</ThemedText>
-            </ThemedView>
-          </Pressable>
-        </Link>
-      </ThemedView>
-    </ScrollView>
+          <Link href={{ pathname: '/booking/[carId]', params: { carId: car.id } }} asChild>
+            <Button
+              mode="contained"
+              accessibilityRole="button"
+              accessibilityLabel="Book this car"
+              contentStyle={styles.bookButtonContent}
+            >
+              Book this car
+            </Button>
+          </Link>
+        </View>
+      </ScrollView>
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.two,
   },
   image: {
     width: '100%',
@@ -98,19 +121,24 @@ const styles = StyleSheet.create({
   },
   section: {
     borderRadius: Spacing.three,
-    padding: Spacing.three,
+  },
+  cardContent: {
     gap: Spacing.one,
   },
   insuranceRow: {
     gap: Spacing.half,
     marginTop: Spacing.one,
   },
+  divider: {
+    marginBottom: Spacing.one,
+  },
   priceBlock: {
     gap: Spacing.half,
   },
-  bookButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
+  bold: {
+    fontWeight: '700',
+  },
+  bookButtonContent: {
+    paddingVertical: Spacing.one,
   },
 });

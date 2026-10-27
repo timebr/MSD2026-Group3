@@ -1,10 +1,9 @@
 import { Link, router, Stack } from 'expo-router';
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Switch } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { Button, Card, Surface, Switch, Text, useTheme } from 'react-native-paper';
 
 import { SyncStatusBanner } from '@/components/sync-status-banner';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { formatMoney } from '@/domain/pricing';
 import { useAuth } from '@/hooks/use-auth';
@@ -21,12 +20,13 @@ function statusLabel(booking: Booking): string {
 
 /** Dev builds only: lets the team demo the failed-sync state (S6b) without a backend. */
 function SimulateFailureToggle() {
+  const theme = useTheme();
   const [enabled, setEnabled] = useState(isSimulatingSyncFailure());
   return (
-    <ThemedView style={styles.devRow}>
-      <ThemedText type="small" themeColor="textSecondary">
+    <View style={styles.devRow}>
+      <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
         Simulate sync failure (dev)
-      </ThemedText>
+      </Text>
       <Switch
         value={enabled}
         onValueChange={(value) => {
@@ -35,11 +35,12 @@ function SimulateFailureToggle() {
         }}
         accessibilityLabel="Simulate sync failure"
       />
-    </ThemedView>
+    </View>
   );
 }
 
 export default function BookingsListScreen() {
+  const theme = useTheme();
   const { user, logOut } = useAuth();
   const { data: bookings, isLoading } = useMyBookings();
   const locationName = useLocationName();
@@ -47,33 +48,41 @@ export default function BookingsListScreen() {
   if (!user) {
     // "Tap My Bookings + not logged in" → S3.
     return (
-      <ThemedView style={[styles.container, styles.empty]}>
-        <ThemedText>Log in to see your bookings.</ThemedText>
-        <Pressable
+      <Surface style={[styles.container, styles.empty]} elevation={0}>
+        <Text variant="bodyLarge">Log in to see your bookings.</Text>
+        <Button
+          mode="contained"
           onPress={() => router.push({ pathname: '/login', params: { mode: 'login' } })}
           accessibilityRole="button"
           accessibilityLabel="Log in"
+          contentStyle={styles.buttonContent}
         >
-          <ThemedView type="backgroundSelected" style={styles.button}>
-            <ThemedText type="smallBold">Log in or create account</ThemedText>
-          </ThemedView>
-        </Pressable>
-      </ThemedView>
+          Log in or create account
+        </Button>
+      </Surface>
     );
   }
 
   return (
-    <ThemedView style={styles.container}>
+    <Surface style={styles.container} elevation={0}>
       <Stack.Screen
         options={{
           headerRight: () => (
-            <Pressable onPress={() => logOut()} accessibilityRole="button" accessibilityLabel="Log out">
-              <ThemedText>Log out</ThemedText>
-            </Pressable>
+            <Button
+              mode="text"
+              compact
+              onPress={() => logOut()}
+              accessibilityRole="button"
+              accessibilityLabel="Log out"
+            >
+              Log out
+            </Button>
           ),
         }}
       />
-      <SyncStatusBanner />
+      <View style={styles.bannerWrapper}>
+        <SyncStatusBanner />
+      </View>
       <FlatList
         data={bookings}
         keyExtractor={(booking) => booking.id}
@@ -85,27 +94,31 @@ export default function BookingsListScreen() {
               accessibilityRole="button"
               accessibilityLabel={`View booking from ${item.startDate.slice(0, 10)}`}
             >
-              <ThemedView type="backgroundElement" style={styles.row}>
-                <ThemedText type="smallBold">
-                  {locationName(item.pickupLocationId)} → {locationName(item.dropoffLocationId)}
-                </ThemedText>
-                <ThemedText type="small" themeColor="textSecondary">
-                  {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {formatMoney(item.price.totalPrice)}
-                </ThemedText>
-                <ThemedText type="small">{statusLabel(item)}</ThemedText>
-              </ThemedView>
+              <Card mode="elevated" style={styles.row}>
+                <Card.Content style={styles.rowContent}>
+                  <Text variant="titleMedium" style={styles.bold}>
+                    {locationName(item.pickupLocationId)} → {locationName(item.dropoffLocationId)}
+                  </Text>
+                  <Text variant="bodySmall" style={{ color: theme.colors.onSurfaceVariant }}>
+                    {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {formatMoney(item.price.totalPrice)}
+                  </Text>
+                  <Text variant="labelMedium" style={{ color: theme.colors.primary }}>
+                    {statusLabel(item)}
+                  </Text>
+                </Card.Content>
+              </Card>
             </Pressable>
           </Link>
         )}
         ListEmptyComponent={
           !isLoading ? (
-            <ThemedView style={styles.empty}>
-              <ThemedText>No bookings yet.</ThemedText>
-            </ThemedView>
+            <View style={styles.empty}>
+              <Text variant="bodyLarge">No bookings yet.</Text>
+            </View>
           ) : null
         }
       />
-    </ThemedView>
+    </Surface>
   );
 }
 
@@ -113,15 +126,22 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  bannerWrapper: {
+    paddingHorizontal: Spacing.three,
+  },
   list: {
     padding: Spacing.three,
     gap: Spacing.two,
   },
   row: {
     borderRadius: Spacing.three,
-    padding: Spacing.three,
-    gap: Spacing.half,
     marginBottom: Spacing.two,
+  },
+  rowContent: {
+    gap: Spacing.half,
+  },
+  bold: {
+    fontWeight: '700',
   },
   devRow: {
     flexDirection: 'row',
@@ -132,11 +152,11 @@ const styles = StyleSheet.create({
   empty: {
     padding: Spacing.four,
     alignItems: 'center',
+    justifyContent: 'center',
     gap: Spacing.three,
   },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
+  buttonContent: {
+    paddingVertical: Spacing.one,
+    paddingHorizontal: Spacing.two,
   },
 });

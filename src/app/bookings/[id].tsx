@@ -2,13 +2,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Button, Card, HelperText, Surface, Text, useTheme } from 'react-native-paper';
 
 import { CarUnavailableError } from '@/api/types';
 import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { calculatePrice } from '@/domain/pricing';
 import { useBooking, useCancelBooking, useUpdateBooking } from '@/hooks/use-bookings';
@@ -19,6 +18,7 @@ import { bookingDatesSchema, type BookingDatesValues } from '@/validation/bookin
 
 export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const theme = useTheme();
   const { data: booking, isLoading } = useBooking(id);
   const { data: car } = useCar(booking?.carId);
   const { data: insuranceOptions = [] } = useInsurance();
@@ -47,17 +47,18 @@ export default function BookingDetailScreen() {
 
   if (isLoading) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Loading…</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <ActivityIndicator />
+        <Text variant="bodyMedium">Loading…</Text>
+      </Surface>
     );
   }
 
   if (!booking) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Booking not found.</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <Text variant="bodyLarge">Booking not found.</Text>
+      </Surface>
     );
   }
 
@@ -100,98 +101,142 @@ export default function BookingDetailScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      {car && (
-        <ThemedText type="subtitle">
-          {car.brand} {car.model}
-        </ThemedText>
-      )}
-
-      <ThemedView type="backgroundElement" style={styles.section}>
-        <ThemedText type="smallBold">Status</ThemedText>
-        <ThemedText type="small">
-          {booking.status}
-          {booking.syncState === 'pending' ? ' · waiting to sync' : ''}
-          {booking.syncState === 'failed' ? ' · sync failed' : ''}
-        </ThemedText>
-        {booking.syncState === 'failed' && isOnline && (
-          <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
-            <ThemedText type="smallBold">Retry</ThemedText>
-          </Pressable>
+    <Surface style={styles.container} elevation={0}>
+      <ScrollView contentContainerStyle={styles.content}>
+        {car && (
+          <Text variant="headlineSmall" style={styles.bold}>
+            {car.brand} {car.model}
+          </Text>
         )}
-      </ThemedView>
 
-      <ThemedView type="backgroundElement" style={styles.section}>
-        <ThemedText type="smallBold">Route</ThemedText>
-        <ThemedText type="small">
-          {locationName(booking.pickupLocationId)} → {locationName(booking.dropoffLocationId)}
-        </ThemedText>
-      </ThemedView>
+        <Card mode="contained" style={styles.section}>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleSmall" style={styles.bold}>
+              Status
+            </Text>
+            <Text variant="bodyMedium">
+              {booking.status}
+              {booking.syncState === 'pending' ? ' · waiting to sync' : ''}
+              {booking.syncState === 'failed' ? ' · sync failed' : ''}
+            </Text>
+            {booking.syncState === 'failed' && isOnline && (
+              <Button
+                mode="text"
+                compact
+                onPress={() => requestSync()}
+                accessibilityRole="button"
+                accessibilityLabel="Retry sync"
+                style={styles.retryButton}
+              >
+                Retry
+              </Button>
+            )}
+          </Card.Content>
+        </Card>
 
-      <ThemedView type="backgroundElement" style={styles.section}>
-        <ThemedText type="smallBold">Dates</ThemedText>
-        {!editing ? (
-          <ThemedText type="small">
-            {booking.startDate.slice(0, 10)} – {booking.endDate.slice(0, 10)}
-          </ThemedText>
-        ) : (
-          <ThemedView style={styles.editFields}>
-            <Controller
-              control={control}
-              name="startDate"
-              render={({ field }) => (
-                <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Pick-up date" />
-              )}
-            />
-            <Controller
-              control={control}
-              name="endDate"
-              render={({ field }) => (
-                <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Return date" />
-              )}
-            />
-          </ThemedView>
+        <Card mode="contained" style={styles.section}>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleSmall" style={styles.bold}>
+              Route
+            </Text>
+            <Text variant="bodyMedium">
+              {locationName(booking.pickupLocationId)} → {locationName(booking.dropoffLocationId)}
+            </Text>
+          </Card.Content>
+        </Card>
+
+        <Card mode="contained" style={styles.section}>
+          <Card.Content style={styles.cardContent}>
+            <Text variant="titleSmall" style={styles.bold}>
+              Dates
+            </Text>
+            {!editing ? (
+              <Text variant="bodyMedium">
+                {booking.startDate.slice(0, 10)} – {booking.endDate.slice(0, 10)}
+              </Text>
+            ) : (
+              <View style={styles.editFields}>
+                <Controller
+                  control={control}
+                  name="startDate"
+                  render={({ field }) => (
+                    <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Pick-up date" />
+                  )}
+                />
+                <Controller
+                  control={control}
+                  name="endDate"
+                  render={({ field }) => (
+                    <DateField value={field.value} onChange={field.onChange} accessibilityLabel="Return date" />
+                  )}
+                />
+              </View>
+            )}
+            {(errors.startDate || errors.endDate) && (
+              <HelperText type="error" padding="none">
+                {errors.startDate?.message || errors.endDate?.message}
+              </HelperText>
+            )}
+            {saveError && (
+              <HelperText type="error" padding="none">
+                {saveError}
+              </HelperText>
+            )}
+          </Card.Content>
+        </Card>
+
+        <PriceSummary price={booking.price} />
+
+        {booking.status !== 'cancelled' && (
+          <View style={styles.actions}>
+            {editing ? (
+              <Button
+                mode="contained"
+                onPress={handleSubmit(onSaveDates)}
+                accessibilityRole="button"
+                accessibilityLabel="Save dates"
+                style={styles.actionButton}
+              >
+                Save dates
+              </Button>
+            ) : (
+              <Button
+                mode="contained"
+                onPress={() => setEditing(true)}
+                accessibilityRole="button"
+                accessibilityLabel="Modify dates"
+                style={styles.actionButton}
+              >
+                Modify dates
+              </Button>
+            )}
+
+            <Button
+              mode="outlined"
+              textColor={theme.colors.error}
+              onPress={onCancel}
+              accessibilityRole="button"
+              accessibilityLabel="Cancel booking"
+              style={styles.actionButton}
+            >
+              Cancel booking
+            </Button>
+          </View>
         )}
-        {(errors.startDate || errors.endDate) && (
-          <ThemedText type="small">{errors.startDate?.message || errors.endDate?.message}</ThemedText>
-        )}
-        {saveError && <ThemedText type="small">{saveError}</ThemedText>}
-      </ThemedView>
-
-      <PriceSummary price={booking.price} />
-
-      {booking.status !== 'cancelled' && (
-        <ThemedView style={styles.actions}>
-          {editing ? (
-            <Pressable onPress={handleSubmit(onSaveDates)} accessibilityRole="button" accessibilityLabel="Save dates">
-              <ThemedView type="backgroundSelected" style={styles.actionButton}>
-                <ThemedText type="smallBold">Save dates</ThemedText>
-              </ThemedView>
-            </Pressable>
-          ) : (
-            <Pressable onPress={() => setEditing(true)} accessibilityRole="button" accessibilityLabel="Modify dates">
-              <ThemedView type="backgroundSelected" style={styles.actionButton}>
-                <ThemedText type="smallBold">Modify dates</ThemedText>
-              </ThemedView>
-            </Pressable>
-          )}
-
-          <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel booking">
-            <ThemedView type="backgroundElement" style={styles.actionButton}>
-              <ThemedText type="smallBold">Cancel booking</ThemedText>
-            </ThemedView>
-          </Pressable>
-        </ThemedView>
-      )}
-    </ScrollView>
+      </ScrollView>
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: Spacing.two,
   },
   content: {
     padding: Spacing.three,
@@ -199,8 +244,15 @@ const styles = StyleSheet.create({
   },
   section: {
     borderRadius: Spacing.three,
-    padding: Spacing.three,
+  },
+  cardContent: {
     gap: Spacing.one,
+  },
+  bold: {
+    fontWeight: '700',
+  },
+  retryButton: {
+    alignSelf: 'flex-start',
   },
   editFields: {
     gap: Spacing.two,
@@ -211,8 +263,5 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
   },
 });

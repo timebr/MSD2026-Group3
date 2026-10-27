@@ -2,22 +2,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
+import { Button, Card, HelperText, Surface, Text, TextInput } from 'react-native-paper';
 
 import { CarUnavailableError } from '@/api/types';
 import { PriceSummary } from '@/components/price-summary';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useCreateBooking } from '@/hooks/use-bookings';
-import { useTheme } from '@/hooks/use-theme';
 import type { BookingDraft } from '@/models/booking';
 import { paymentFormSchema, type PaymentFormValues } from '@/validation/payment';
 
 export default function CheckoutScreen() {
   const { draft } = useLocalSearchParams<{ draft: string }>();
-  const theme = useTheme();
   const { user } = useAuth();
   const createBooking = useCreateBooking();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -47,9 +44,9 @@ export default function CheckoutScreen() {
 
   if (!bookingDraft) {
     return (
-      <ThemedView style={styles.center}>
-        <ThemedText>Missing booking details — please start again from the car list.</ThemedText>
-      </ThemedView>
+      <Surface style={styles.center} elevation={0}>
+        <Text variant="bodyLarge">Missing booking details — please start again from the car list.</Text>
+      </Surface>
     );
   }
 
@@ -81,140 +78,161 @@ export default function CheckoutScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
-      <PriceSummary price={bookingDraft.price} />
+    <Surface style={styles.container} elevation={0}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+        <PriceSummary price={bookingDraft.price} />
 
-      {!user && (
-        <ThemedView type="backgroundElement" style={styles.notice}>
-          <ThemedText type="small">
-            You&apos;re browsing as a guest. You&apos;ll be asked to log in or create an account when you pay.
-          </ThemedText>
-        </ThemedView>
-      )}
+        {!user && (
+          <Card mode="contained" style={styles.notice}>
+            <Card.Content>
+              <Text variant="bodySmall">
+                You&apos;re browsing as a guest. You&apos;ll be asked to log in or create an account when you pay.
+              </Text>
+            </Card.Content>
+          </Card>
+        )}
 
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Cardholder name</ThemedText>
-        <Controller
-          control={control}
-          name="cardholderName"
-          render={({ field }) => (
-            <TextInput
-              value={field.value}
-              onChangeText={field.onChange}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-              accessibilityLabel="Cardholder name"
-            />
-          )}
-        />
-        {errors.cardholderName && <ThemedText type="small">{errors.cardholderName.message}</ThemedText>}
-      </ThemedView>
-
-      <ThemedView style={styles.field}>
-        <ThemedText type="smallBold">Card number</ThemedText>
-        <Controller
-          control={control}
-          name="cardNumber"
-          render={({ field }) => (
-            <TextInput
-              value={field.value}
-              onChangeText={field.onChange}
-              keyboardType="number-pad"
-              maxLength={16}
-              placeholder="4242424242424242"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-              accessibilityLabel="Card number"
-            />
-          )}
-        />
-        {errors.cardNumber && <ThemedText type="small">{errors.cardNumber.message}</ThemedText>}
-      </ThemedView>
-
-      <ThemedView style={styles.row}>
-        <ThemedView style={[styles.field, styles.flex1]}>
-          <ThemedText type="smallBold">Expiry month</ThemedText>
+        <View style={styles.field}>
           <Controller
             control={control}
-            name="expiryMonth"
+            name="cardholderName"
             render={({ field }) => (
               <TextInput
-                value={field.value?.toString() ?? ''}
+                mode="outlined"
+                label="Cardholder name"
+                value={field.value}
                 onChangeText={field.onChange}
-                keyboardType="number-pad"
-                maxLength={2}
-                placeholder="MM"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-                accessibilityLabel="Card expiry month"
+                error={Boolean(errors.cardholderName)}
+                accessibilityLabel="Cardholder name"
               />
             )}
           />
-        </ThemedView>
+          {errors.cardholderName && (
+            <HelperText type="error" padding="none">
+              {errors.cardholderName.message}
+            </HelperText>
+          )}
+        </View>
 
-        <ThemedView style={[styles.field, styles.flex1]}>
-          <ThemedText type="smallBold">Expiry year</ThemedText>
+        <View style={styles.field}>
           <Controller
             control={control}
-            name="expiryYear"
+            name="cardNumber"
             render={({ field }) => (
               <TextInput
-                value={field.value?.toString() ?? ''}
-                onChangeText={field.onChange}
-                keyboardType="number-pad"
-                maxLength={4}
-                placeholder="YYYY"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-                accessibilityLabel="Card expiry year"
-              />
-            )}
-          />
-        </ThemedView>
-
-        <ThemedView style={[styles.field, styles.flex1]}>
-          <ThemedText type="smallBold">CVV</ThemedText>
-          <Controller
-            control={control}
-            name="cvv"
-            render={({ field }) => (
-              <TextInput
+                mode="outlined"
+                label="Card number"
                 value={field.value}
                 onChangeText={field.onChange}
                 keyboardType="number-pad"
-                maxLength={4}
-                secureTextEntry
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
-                accessibilityLabel="Card CVV"
+                maxLength={16}
+                placeholder="4242424242424242"
+                error={Boolean(errors.cardNumber)}
+                accessibilityLabel="Card number"
               />
             )}
           />
-        </ThemedView>
-      </ThemedView>
-      {(errors.expiryMonth || errors.expiryYear || errors.cvv) && (
-        <ThemedText type="small">
-          {errors.expiryMonth?.message || errors.expiryYear?.message || errors.cvv?.message}
-        </ThemedText>
-      )}
+          {errors.cardNumber && (
+            <HelperText type="error" padding="none">
+              {errors.cardNumber.message}
+            </HelperText>
+          )}
+        </View>
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+        <View style={styles.row}>
+          <View style={[styles.field, styles.flex1]}>
+            <Controller
+              control={control}
+              name="expiryMonth"
+              render={({ field }) => (
+                <TextInput
+                  mode="outlined"
+                  label="Expiry month"
+                  value={field.value?.toString() ?? ''}
+                  onChangeText={field.onChange}
+                  keyboardType="number-pad"
+                  maxLength={2}
+                  placeholder="MM"
+                  error={Boolean(errors.expiryMonth)}
+                  accessibilityLabel="Card expiry month"
+                />
+              )}
+            />
+          </View>
 
-      <Pressable
-        onPress={handleSubmit(onSubmit)}
-        disabled={createBooking.isPending}
-        accessibilityRole="button"
-        accessibilityLabel={user ? 'Confirm and pay' : 'Log in to pay'}
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">
-            {createBooking.isPending ? 'Processing…' : user ? 'Confirm and pay' : 'Log in to pay'}
-          </ThemedText>
-        </ThemedView>
-      </Pressable>
-    </ScrollView>
+          <View style={[styles.field, styles.flex1]}>
+            <Controller
+              control={control}
+              name="expiryYear"
+              render={({ field }) => (
+                <TextInput
+                  mode="outlined"
+                  label="Expiry year"
+                  value={field.value?.toString() ?? ''}
+                  onChangeText={field.onChange}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  placeholder="YYYY"
+                  error={Boolean(errors.expiryYear)}
+                  accessibilityLabel="Card expiry year"
+                />
+              )}
+            />
+          </View>
+
+          <View style={[styles.field, styles.flex1]}>
+            <Controller
+              control={control}
+              name="cvv"
+              render={({ field }) => (
+                <TextInput
+                  mode="outlined"
+                  label="CVV"
+                  value={field.value}
+                  onChangeText={field.onChange}
+                  keyboardType="number-pad"
+                  maxLength={4}
+                  secureTextEntry
+                  error={Boolean(errors.cvv)}
+                  accessibilityLabel="Card CVV"
+                />
+              )}
+            />
+          </View>
+        </View>
+        {(errors.expiryMonth || errors.expiryYear || errors.cvv) && (
+          <HelperText type="error" padding="none">
+            {errors.expiryMonth?.message || errors.expiryYear?.message || errors.cvv?.message}
+          </HelperText>
+        )}
+
+        {submitError && (
+          <HelperText type="error" padding="none">
+            {submitError}
+          </HelperText>
+        )}
+
+        <Button
+          mode="contained"
+          onPress={handleSubmit(onSubmit)}
+          loading={createBooking.isPending}
+          disabled={createBooking.isPending}
+          accessibilityRole="button"
+          accessibilityLabel={user ? 'Confirm and pay' : 'Log in to pay'}
+          style={styles.submitButton}
+          contentStyle={styles.submitButtonContent}
+        >
+          {createBooking.isPending ? 'Processing…' : user ? 'Confirm and pay' : 'Log in to pay'}
+        </Button>
+      </ScrollView>
+    </Surface>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   center: {
     flex: 1,
     alignItems: 'center',
@@ -227,10 +245,9 @@ const styles = StyleSheet.create({
   },
   notice: {
     borderRadius: Spacing.three,
-    padding: Spacing.three,
   },
   field: {
-    gap: Spacing.one,
+    gap: Spacing.half,
   },
   row: {
     flexDirection: 'row',
@@ -239,17 +256,10 @@ const styles = StyleSheet.create({
   flex1: {
     flex: 1,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
   submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
     marginTop: Spacing.two,
+  },
+  submitButtonContent: {
+    paddingVertical: Spacing.one,
   },
 });
