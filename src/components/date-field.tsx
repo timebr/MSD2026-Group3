@@ -68,7 +68,6 @@ export function DateField({
   return (
     <Button
       mode="outlined"
-      icon="calendar"
       onPress={() =>
         DateTimePickerAndroid.open({
           value: selected ?? minimumDate,

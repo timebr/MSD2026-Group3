@@ -36,12 +36,13 @@ export function CarCard({ car, insuranceOptions }: { car: Car; insuranceOptions:
 const styles = StyleSheet.create({
   card: {
     borderRadius: Spacing.three,
-    overflow: 'hidden',
     marginBottom: Spacing.three,
   },
   image: {
     width: '100%',
     height: 170,
+    borderTopLeftRadius: Spacing.three,
+    borderTopRightRadius: Spacing.three,
   },
   info: {
     paddingTop: Spacing.three,
