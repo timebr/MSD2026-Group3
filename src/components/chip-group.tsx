@@ -2,7 +2,7 @@ import { Pressable, StyleSheet } from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MinTouchSize, Spacing } from '@/constants/theme';
 
 export interface ChipOption<T extends string> {
   value: T;
@@ -37,9 +37,12 @@ export function ChipGroup<T extends string>({
             accessibilityRole="radio"
             accessibilityState={{ selected }}
             accessibilityLabel={option.label}
+            style={styles.chipTouchArea}
           >
-            <ThemedView type={selected ? 'backgroundSelected' : 'backgroundElement'} style={styles.chip}>
-              <ThemedText type={selected ? 'smallBold' : 'small'}>{option.label}</ThemedText>
+            <ThemedView type={selected ? 'primary' : 'surface'} style={styles.chip}>
+              <ThemedText type={selected ? 'smallBold' : 'small'} themeColor={selected ? 'onPrimary' : 'text'}>
+                {option.label}
+              </ThemedText>
             </ThemedView>
           </Pressable>
         );
@@ -54,9 +57,15 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     gap: Spacing.two,
   },
+  chipTouchArea: {
+    minHeight: MinTouchSize,
+    justifyContent: 'center',
+  },
   chip: {
+    minWidth: MinTouchSize,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     borderRadius: Spacing.four,
+    alignItems: 'center',
   },
 });

@@ -4,19 +4,23 @@ import { Fonts, ThemeColor } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 
 export type ThemedTextProps = TextProps & {
-  type?: 'default' | 'title' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
+  type?: 'default' | 'title' | 'heading' | 'small' | 'smallBold' | 'subtitle' | 'link' | 'linkPrimary' | 'code';
   themeColor?: ThemeColor;
 };
 
+const LINK_TYPES: ThemedTextProps['type'][] = ['link', 'linkPrimary'];
+
 export function ThemedText({ style, type = 'default', themeColor, ...rest }: ThemedTextProps) {
   const theme = useTheme();
+  const isLink = LINK_TYPES.includes(type);
 
   return (
     <Text
       style={[
-        { color: theme[themeColor ?? 'text'] },
+        { color: theme[themeColor ?? (isLink ? 'primary' : 'text')] },
         type === 'default' && styles.default,
         type === 'title' && styles.title,
+        type === 'heading' && styles.heading,
         type === 'small' && styles.small,
         type === 'smallBold' && styles.smallBold,
         type === 'subtitle' && styles.subtitle,
@@ -30,6 +34,9 @@ export function ThemedText({ style, type = 'default', themeColor, ...rest }: The
   );
 }
 
+// Type scale (design doc 5.1): 32/600 title, 20/600 section heading, 16/400
+// body, 14/500 labels. Nothing below 14px, so 200% system font size doesn't
+// read as unreadably small text.
 const styles = StyleSheet.create({
   small: {
     fontSize: 14,
@@ -44,30 +51,36 @@ const styles = StyleSheet.create({
   default: {
     fontSize: 16,
     lineHeight: 24,
-    fontWeight: 500,
+    fontWeight: 400,
   },
   title: {
-    fontSize: 48,
+    fontSize: 32,
     fontWeight: 600,
-    lineHeight: 52,
+    lineHeight: 40,
+  },
+  heading: {
+    fontSize: 20,
+    fontWeight: 600,
+    lineHeight: 26,
   },
   subtitle: {
-    fontSize: 32,
-    lineHeight: 44,
+    fontSize: 20,
     fontWeight: 600,
+    lineHeight: 26,
   },
   link: {
-    lineHeight: 30,
+    lineHeight: 20,
     fontSize: 14,
+    textDecorationLine: 'underline',
   },
   linkPrimary: {
-    lineHeight: 30,
+    lineHeight: 20,
     fontSize: 14,
-    color: '#3c87f7',
+    textDecorationLine: 'underline',
   },
   code: {
     fontFamily: Fonts.mono,
     fontWeight: Platform.select({ android: 700 }) ?? 500,
-    fontSize: 12,
+    fontSize: 14,
   },
 });

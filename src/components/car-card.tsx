@@ -13,7 +13,7 @@ export function CarCard({ car, insuranceOptions }: { car: Car; insuranceOptions:
   return (
     <Link href={{ pathname: '/car/[id]', params: { id: car.id } }} asChild>
       <Pressable accessibilityRole="button" accessibilityLabel={`View details for ${car.brand} ${car.model}`}>
-        <ThemedView type="backgroundElement" style={styles.card}>
+        <ThemedView type="surface" style={styles.card}>
           <Image source={{ uri: car.imageUrl }} style={styles.image} contentFit="cover" />
           <ThemedView style={styles.info}>
             <ThemedText type="subtitle">

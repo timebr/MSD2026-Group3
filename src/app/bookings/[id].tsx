@@ -2,11 +2,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Alert, Pressable, ScrollView, StyleSheet } from 'react-native';
+import { Alert, ScrollView, StyleSheet } from 'react-native';
 
 import { CarUnavailableError } from '@/api/types';
+import { Button } from '@/components/button';
 import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -17,6 +19,7 @@ import { useIsOnline } from '@/offline/connectivity';
 import { requestSync } from '@/offline/syncManager';
 import { bookingDatesSchema, type BookingDatesValues } from '@/validation/booking';
 
+/** S7 Booking management: view status, modify dates, or cancel a booking. */
 export default function BookingDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: booking, isLoading } = useBooking(id);
@@ -102,33 +105,42 @@ export default function BookingDetailScreen() {
   return (
     <ScrollView contentContainerStyle={styles.content}>
       {car && (
-        <ThemedText type="subtitle">
+        <ThemedText type="title">
           {car.brand} {car.model}
         </ThemedText>
       )}
 
-      <ThemedView type="backgroundElement" style={styles.section}>
+      <ThemedView type="surface" style={styles.section}>
         <ThemedText type="smallBold">Status</ThemedText>
-        <ThemedText type="small">
-          {booking.status}
-          {booking.syncState === 'pending' ? ' · waiting to sync' : ''}
-          {booking.syncState === 'failed' ? ' · sync failed' : ''}
-        </ThemedText>
+        <StatusBadge
+          status={booking.syncState}
+          label={`${booking.status}${
+            booking.syncState === 'pending'
+              ? ' · waiting to sync'
+              : booking.syncState === 'failed'
+                ? ' · sync failed'
+                : ''
+          }`}
+        />
         {booking.syncState === 'failed' && isOnline && (
-          <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
-            <ThemedText type="smallBold">Retry</ThemedText>
-          </Pressable>
+          <Button
+            label="Retry"
+            variant="secondary"
+            onPress={() => requestSync()}
+            accessibilityLabel="Retry sync"
+            style={styles.inlineButton}
+          />
         )}
       </ThemedView>
 
-      <ThemedView type="backgroundElement" style={styles.section}>
+      <ThemedView type="surface" style={styles.section}>
         <ThemedText type="smallBold">Route</ThemedText>
         <ThemedText type="small">
           {locationName(booking.pickupLocationId)} → {locationName(booking.dropoffLocationId)}
         </ThemedText>
       </ThemedView>
 
-      <ThemedView type="backgroundElement" style={styles.section}>
+      <ThemedView type="surface" style={styles.section}>
         <ThemedText type="smallBold">Dates</ThemedText>
         {!editing ? (
           <ThemedText type="small">
@@ -153,9 +165,15 @@ export default function BookingDetailScreen() {
           </ThemedView>
         )}
         {(errors.startDate || errors.endDate) && (
-          <ThemedText type="small">{errors.startDate?.message || errors.endDate?.message}</ThemedText>
+          <ThemedText type="small" themeColor="error">
+            {errors.startDate?.message || errors.endDate?.message}
+          </ThemedText>
         )}
-        {saveError && <ThemedText type="small">{saveError}</ThemedText>}
+        {saveError && (
+          <ThemedText type="small" themeColor="error">
+            {saveError}
+          </ThemedText>
+        )}
       </ThemedView>
 
       <PriceSummary price={booking.price} />
@@ -163,24 +181,22 @@ export default function BookingDetailScreen() {
       {booking.status !== 'cancelled' && (
         <ThemedView style={styles.actions}>
           {editing ? (
-            <Pressable onPress={handleSubmit(onSaveDates)} accessibilityRole="button" accessibilityLabel="Save dates">
-              <ThemedView type="backgroundSelected" style={styles.actionButton}>
-                <ThemedText type="smallBold">Save dates</ThemedText>
-              </ThemedView>
-            </Pressable>
+            <Button
+              label="Save dates"
+              variant="primary"
+              onPress={handleSubmit(onSaveDates)}
+              style={styles.actionButton}
+            />
           ) : (
-            <Pressable onPress={() => setEditing(true)} accessibilityRole="button" accessibilityLabel="Modify dates">
-              <ThemedView type="backgroundSelected" style={styles.actionButton}>
-                <ThemedText type="smallBold">Modify dates</ThemedText>
-              </ThemedView>
-            </Pressable>
+            <Button
+              label="Modify dates"
+              variant="primary"
+              onPress={() => setEditing(true)}
+              style={styles.actionButton}
+            />
           )}
 
-          <Pressable onPress={onCancel} accessibilityRole="button" accessibilityLabel="Cancel booking">
-            <ThemedView type="backgroundElement" style={styles.actionButton}>
-              <ThemedText type="smallBold">Cancel booking</ThemedText>
-            </ThemedView>
-          </Pressable>
+          <Button label="Cancel booking" variant="danger" onPress={onCancel} style={styles.actionButton} />
         </ThemedView>
       )}
     </ScrollView>
@@ -211,8 +227,8 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     flex: 1,
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
+  },
+  inlineButton: {
+    alignSelf: 'flex-start',
   },
 });

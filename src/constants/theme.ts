@@ -1,6 +1,7 @@
 /**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
+ * High-contrast colour roles for the app (design doc 5.1, teacher feedback FE#6).
+ * Every colour used in the app comes from this table — never hard-code a hex
+ * value outside this file.
  */
 
 import '@/global.css';
@@ -9,18 +10,30 @@ import { Platform } from 'react-native';
 
 export const Colors = {
   light: {
-    text: '#000000',
-    background: '#ffffff',
-    backgroundElement: '#F0F0F3',
-    backgroundSelected: '#E0E1E6',
-    textSecondary: '#60646C',
+    background: '#FFFFFF',
+    surface: '#EDEEF1',
+    text: '#0B0B0F',
+    textSecondary: '#3A3E45',
+    primary: '#0040A8',
+    onPrimary: '#FFFFFF',
+    border: '#5A5F68',
+    error: '#B3261E',
+    success: '#146C2E',
+    warning: '#7A4F00',
+    warningBackground: '#FFF4D6',
   },
   dark: {
-    text: '#ffffff',
     background: '#000000',
-    backgroundElement: '#212225',
-    backgroundSelected: '#2E3135',
-    textSecondary: '#B0B4BA',
+    surface: '#1C1D20',
+    text: '#FFFFFF',
+    textSecondary: '#D2D5DA',
+    primary: '#9EC1FF',
+    onPrimary: '#000000',
+    border: '#9AA0A8',
+    error: '#FF9C94',
+    success: '#7EE2A0',
+    warning: '#FFD27A',
+    warningBackground: '#000000',
   },
 } as const;
 
@@ -60,6 +73,9 @@ export const Spacing = {
   five: 32,
   six: 64,
 } as const;
+
+/** Minimum touch target size, WCAG 2.5.8 (teacher feedback, FE#6). */
+export const MinTouchSize = 48;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

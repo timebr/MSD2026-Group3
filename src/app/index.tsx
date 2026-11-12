@@ -3,12 +3,13 @@ import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+import { Button } from '@/components/button';
 import { CarCard } from '@/components/car-card';
 import { ChipGroup } from '@/components/chip-group';
 import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MinTouchSize, Spacing } from '@/constants/theme';
 import { useCars, useInsurance, useLocations } from '@/hooks/use-cars';
 import type { CarSort, CarType } from '@/models/car';
 
@@ -33,9 +34,7 @@ export default function CarListScreen() {
         options={{
           headerRight: () => (
             <Link href="/bookings" asChild>
-              <Pressable accessibilityRole="button" accessibilityLabel="My bookings">
-                <ThemedText themeColor="text">My bookings</ThemedText>
-              </Pressable>
+              <Button label="My bookings" variant="secondary" style={styles.headerButton} />
             </Link>
           ),
         }}
@@ -44,24 +43,21 @@ export default function CarListScreen() {
         <SyncStatusBanner />
 
         {confirmedBookingId && (
-          <ThemedView type="backgroundElement" style={styles.confirmedBanner}>
+          <ThemedView type="surface" style={styles.confirmedBanner}>
             <ThemedText type="smallBold">Booking confirmed!</ThemedText>
-            <ThemedView type="backgroundElement" style={styles.confirmedActions}>
+            <ThemedView type="surface" style={styles.confirmedActions}>
               <Link href={{ pathname: '/bookings/[id]', params: { id: confirmedBookingId } }} asChild>
-                <Pressable accessibilityRole="button" accessibilityLabel="View booking">
-                  <ThemedText type="link" themeColor="text">
-                    View booking
-                  </ThemedText>
+                <Pressable accessibilityRole="button" accessibilityLabel="View booking" style={styles.linkTouchArea}>
+                  <ThemedText type="link">View booking</ThemedText>
                 </Pressable>
               </Link>
               <Pressable
                 onPress={() => router.setParams({ confirmedBookingId: undefined })}
                 accessibilityRole="button"
                 accessibilityLabel="Dismiss confirmation"
+                style={styles.linkTouchArea}
               >
-                <ThemedText type="link" themeColor="text">
-                  Dismiss
-                </ThemedText>
+                <ThemedText type="link">Dismiss</ThemedText>
               </Pressable>
             </ThemedView>
           </ThemedView>
@@ -88,8 +84,9 @@ export default function CarListScreen() {
             onPress={() => setSort((current) => (current === 'price-asc' ? 'price-desc' : 'price-asc'))}
             accessibilityRole="button"
             accessibilityLabel="Sort by price"
+            style={styles.linkTouchArea}
           >
-            <ThemedText type="link" themeColor="text">
+            <ThemedText type="link">
               Sort: {sort === 'price-desc' ? 'price high to low' : 'price low to high'}
             </ThemedText>
           </Pressable>
@@ -135,5 +132,12 @@ const styles = StyleSheet.create({
   },
   list: {
     paddingBottom: Spacing.four,
+  },
+  headerButton: {
+    paddingHorizontal: Spacing.three,
+  },
+  linkTouchArea: {
+    minHeight: MinTouchSize,
+    justifyContent: 'center',
   },
 });

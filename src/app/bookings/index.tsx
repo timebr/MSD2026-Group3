@@ -2,6 +2,8 @@ import { Link, router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Switch } from 'react-native';
 
+import { Button } from '@/components/button';
+import { StatusBadge } from '@/components/status-badge';
 import { SyncStatusBanner } from '@/components/sync-status-banner';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
@@ -48,15 +50,12 @@ export default function BookingsListScreen() {
     return (
       <ThemedView style={[styles.container, styles.empty]}>
         <ThemedText>Log in to see your bookings.</ThemedText>
-        <Pressable
+        <Button
+          label="Log in or create account"
+          variant="primary"
           onPress={() => router.push({ pathname: '/login', params: { mode: 'login' } })}
-          accessibilityRole="button"
           accessibilityLabel="Log in"
-        >
-          <ThemedView type="backgroundSelected" style={styles.button}>
-            <ThemedText type="smallBold">Log in or create account</ThemedText>
-          </ThemedView>
-        </Pressable>
+        />
       </ThemedView>
     );
   }
@@ -84,14 +83,14 @@ export default function BookingsListScreen() {
               accessibilityRole="button"
               accessibilityLabel={`View booking from ${item.startDate.slice(0, 10)}`}
             >
-              <ThemedView type="backgroundElement" style={styles.row}>
+              <ThemedView type="surface" style={styles.row}>
                 <ThemedText type="smallBold">
                   {locationName(item.pickupLocationId)} → {locationName(item.dropoffLocationId)}
                 </ThemedText>
                 <ThemedText type="small" themeColor="textSecondary">
                   {item.startDate.slice(0, 10)} – {item.endDate.slice(0, 10)} · {item.price.totalPrice} DKK
                 </ThemedText>
-                <ThemedText type="small">{statusLabel(item)}</ThemedText>
+                <StatusBadge status={item.syncState} label={statusLabel(item)} />
               </ThemedView>
             </Pressable>
           </Link>
@@ -132,10 +131,5 @@ const styles = StyleSheet.create({
     padding: Spacing.four,
     alignItems: 'center',
     gap: Spacing.three,
-  },
-  button: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    paddingHorizontal: Spacing.four,
   },
 });
