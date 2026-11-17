@@ -1,9 +1,10 @@
 import DateTimePicker, { DateTimePickerAndroid } from '@react-native-community/datetimepicker';
-import { Platform, Pressable, StyleSheet, TextInput } from 'react-native';
+import { Platform, Pressable, StyleSheet } from 'react-native';
 
+import { TextInput } from '@/components/text-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MinTouchSize, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { toDateString } from '@/utils/date';
 
@@ -41,8 +42,6 @@ export function DateField({
         value={value}
         onChangeText={onChange}
         placeholder="YYYY-MM-DD"
-        placeholderTextColor={theme.textSecondary}
-        style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
         accessibilityLabel={accessibilityLabel}
       />
     );
@@ -83,7 +82,7 @@ export function DateField({
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel}
     >
-      <ThemedView style={[styles.input, { borderColor: theme.backgroundSelected }]}>
+      <ThemedView style={[styles.input, { borderColor: theme.border }]}>
         <ThemedText themeColor={selected ? 'text' : 'textSecondary'}>{selected ? value : 'Choose a date'}</ThemedText>
       </ThemedView>
     </Pressable>
@@ -92,11 +91,13 @@ export function DateField({
 
 const styles = StyleSheet.create({
   input: {
+    minHeight: MinTouchSize,
     borderWidth: 1,
     borderRadius: Spacing.two,
     paddingHorizontal: Spacing.three,
     paddingVertical: Spacing.two,
     fontSize: 16,
+    justifyContent: 'center',
   },
   iosRow: {
     flexDirection: 'row',

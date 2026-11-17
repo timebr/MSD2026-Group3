@@ -2,22 +2,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, TextInput } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
 import { CarUnavailableError } from '@/api/types';
+import { Button } from '@/components/button';
 import { PriceSummary } from '@/components/price-summary';
+import { TextInput } from '@/components/text-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
 import { useCreateBooking } from '@/hooks/use-bookings';
-import { useTheme } from '@/hooks/use-theme';
 import type { BookingDraft } from '@/models/booking';
 import { paymentFormSchema, type PaymentFormValues } from '@/validation/payment';
 
 export default function CheckoutScreen() {
   const { draft } = useLocalSearchParams<{ draft: string }>();
-  const theme = useTheme();
   const { user } = useAuth();
   const createBooking = useCreateBooking();
   const [submitError, setSubmitError] = useState<string | null>(null);
@@ -85,7 +85,7 @@ export default function CheckoutScreen() {
       <PriceSummary price={bookingDraft.price} />
 
       {!user && (
-        <ThemedView type="backgroundElement" style={styles.notice}>
+        <ThemedView type="surface" style={styles.notice}>
           <ThemedText type="small">
             You&apos;re browsing as a guest. You&apos;ll be asked to log in or create an account when you pay.
           </ThemedText>
@@ -101,12 +101,11 @@ export default function CheckoutScreen() {
             <TextInput
               value={field.value}
               onChangeText={field.onChange}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
               accessibilityLabel="Cardholder name"
+              error={errors.cardholderName?.message}
             />
           )}
         />
-        {errors.cardholderName && <ThemedText type="small">{errors.cardholderName.message}</ThemedText>}
       </ThemedView>
 
       <ThemedView style={styles.field}>
@@ -121,13 +120,11 @@ export default function CheckoutScreen() {
               keyboardType="number-pad"
               maxLength={16}
               placeholder="4242424242424242"
-              placeholderTextColor={theme.textSecondary}
-              style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
               accessibilityLabel="Card number"
+              error={errors.cardNumber?.message}
             />
           )}
         />
-        {errors.cardNumber && <ThemedText type="small">{errors.cardNumber.message}</ThemedText>}
       </ThemedView>
 
       <ThemedView style={styles.row}>
@@ -143,8 +140,6 @@ export default function CheckoutScreen() {
                 keyboardType="number-pad"
                 maxLength={2}
                 placeholder="MM"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
                 accessibilityLabel="Card expiry month"
               />
             )}
@@ -163,8 +158,6 @@ export default function CheckoutScreen() {
                 keyboardType="number-pad"
                 maxLength={4}
                 placeholder="YYYY"
-                placeholderTextColor={theme.textSecondary}
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
                 accessibilityLabel="Card expiry year"
               />
             )}
@@ -183,7 +176,6 @@ export default function CheckoutScreen() {
                 keyboardType="number-pad"
                 maxLength={4}
                 secureTextEntry
-                style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
                 accessibilityLabel="Card CVV"
               />
             )}
@@ -191,25 +183,24 @@ export default function CheckoutScreen() {
         </ThemedView>
       </ThemedView>
       {(errors.expiryMonth || errors.expiryYear || errors.cvv) && (
-        <ThemedText type="small">
+        <ThemedText type="small" themeColor="error">
           {errors.expiryMonth?.message || errors.expiryYear?.message || errors.cvv?.message}
         </ThemedText>
       )}
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+      {submitError && (
+        <ThemedText type="small" themeColor="error">
+          {submitError}
+        </ThemedText>
+      )}
 
-      <Pressable
+      <Button
+        label={createBooking.isPending ? 'Processing…' : user ? 'Confirm and pay' : 'Log in to pay'}
+        variant="primary"
         onPress={handleSubmit(onSubmit)}
         disabled={createBooking.isPending}
-        accessibilityRole="button"
         accessibilityLabel={user ? 'Confirm and pay' : 'Log in to pay'}
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">
-            {createBooking.isPending ? 'Processing…' : user ? 'Confirm and pay' : 'Log in to pay'}
-          </ThemedText>
-        </ThemedView>
-      </Pressable>
+      />
     </ScrollView>
   );
 }
@@ -238,18 +229,5 @@ const styles = StyleSheet.create({
   },
   flex1: {
     flex: 1,
-  },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
-  submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.two,
   },
 });

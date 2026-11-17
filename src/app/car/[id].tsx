@@ -1,7 +1,8 @@
 import { Image } from 'expo-image';
 import { Link, useLocalSearchParams } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
+import { Button } from '@/components/button';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { Spacing } from '@/constants/theme';
@@ -45,12 +46,12 @@ export default function CarDetailScreen() {
           Pick up at {locationName(car.locationId)}
         </ThemedText>
 
-        <ThemedView type="backgroundElement" style={styles.section}>
+        <ThemedView type="surface" style={styles.section}>
           <ThemedText type="smallBold">Fuel policy</ThemedText>
           <ThemedText type="small">{car.fuelPolicy.replace(/-/g, ' ')}</ThemedText>
         </ThemedView>
 
-        <ThemedView type="backgroundElement" style={styles.section}>
+        <ThemedView type="surface" style={styles.section}>
           <ThemedText type="smallBold">Insurance options</ThemedText>
           {insuranceOptions.map((option) => (
             <ThemedView key={option.id} style={styles.insuranceRow}>
@@ -71,11 +72,7 @@ export default function CarDetailScreen() {
         </ThemedView>
 
         <Link href={{ pathname: '/booking/[carId]', params: { carId: car.id } }} asChild>
-          <Pressable accessibilityRole="button" accessibilityLabel="Book this car">
-            <ThemedView type="backgroundSelected" style={styles.bookButton}>
-              <ThemedText type="smallBold">Book this car</ThemedText>
-            </ThemedView>
-          </Pressable>
+          <Button label="Book this car" variant="primary" />
         </Link>
       </ThemedView>
     </ScrollView>
@@ -107,10 +104,5 @@ const styles = StyleSheet.create({
   },
   priceBlock: {
     gap: Spacing.half,
-  },
-  bookButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
   },
 });

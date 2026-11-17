@@ -2,8 +2,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm, useWatch } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 
+import { Button } from '@/components/button';
 import { ChipGroup } from '@/components/chip-group';
 import { DateField } from '@/components/date-field';
 import { PriceSummary } from '@/components/price-summary';
@@ -101,13 +102,17 @@ function BookingForm({
         name={name}
         render={({ field }) => <DateField value={field.value} onChange={field.onChange} accessibilityLabel={label} />}
       />
-      {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
+      {errors[name] && (
+        <ThemedText type="small" themeColor="error">
+          {errors[name]?.message}
+        </ThemedText>
+      )}
     </ThemedView>
   );
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <ThemedText type="subtitle">
+      <ThemedText type="title">
         {car.brand} {car.model}
       </ThemedText>
 
@@ -125,7 +130,11 @@ function BookingForm({
             />
           )}
         />
-        {errors.pickupLocationId && <ThemedText type="small">{errors.pickupLocationId.message}</ThemedText>}
+        {errors.pickupLocationId && (
+          <ThemedText type="small" themeColor="error">
+            {errors.pickupLocationId.message}
+          </ThemedText>
+        )}
       </ThemedView>
 
       <ThemedView style={styles.field}>
@@ -142,7 +151,11 @@ function BookingForm({
             />
           )}
         />
-        {errors.dropoffLocationId && <ThemedText type="small">{errors.dropoffLocationId.message}</ThemedText>}
+        {errors.dropoffLocationId && (
+          <ThemedText type="small" themeColor="error">
+            {errors.dropoffLocationId.message}
+          </ThemedText>
+        )}
       </ThemedView>
 
       {dateInput('startDate', 'Pick-up date')}
@@ -169,18 +182,13 @@ function BookingForm({
 
       {preview.success && <PriceSummary price={priceFor(preview.data)} />}
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+      {submitError && (
+        <ThemedText type="small" themeColor="error">
+          {submitError}
+        </ThemedText>
+      )}
 
-      <Pressable
-        onPress={handleSubmit(onSubmit)}
-        disabled={isSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel="Continue to checkout"
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">Continue to checkout</ThemedText>
-        </ThemedView>
-      </Pressable>
+      <Button label="Continue to checkout" variant="primary" onPress={handleSubmit(onSubmit)} disabled={isSubmitting} />
     </ScrollView>
   );
 }
@@ -197,11 +205,5 @@ const styles = StyleSheet.create({
   },
   field: {
     gap: Spacing.one,
-  },
-  submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-    marginTop: Spacing.two,
   },
 });

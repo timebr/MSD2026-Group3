@@ -2,15 +2,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
-import { Pressable, ScrollView, StyleSheet, TextInput, type TextInputProps } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, type TextInputProps } from 'react-native';
 import { z } from 'zod';
 
 import { EmailTakenError, InvalidCredentialsError } from '@/api/types';
+import { Button } from '@/components/button';
+import { TextInput } from '@/components/text-input';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MinTouchSize, Spacing } from '@/constants/theme';
 import { useAuth } from '@/hooks/use-auth';
-import { useTheme } from '@/hooks/use-theme';
 import { logInSchema, signUpSchema, type SignUpValues } from '@/validation/auth';
 
 type Mode = 'login' | 'signup';
@@ -37,7 +38,6 @@ function AuthForm({
   onSwitchMode: (mode: Mode) => void;
   fromWelcome: boolean;
 }) {
-  const theme = useTheme();
   const { logIn, signUp } = useAuth();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const isSignUp = mode === 'signup';
@@ -84,13 +84,12 @@ function AuthForm({
           <TextInput
             value={value}
             onChangeText={onChange}
-            style={[styles.input, { color: theme.text, borderColor: theme.backgroundSelected }]}
             accessibilityLabel={label}
+            error={errors[name]?.message}
             {...props}
           />
         )}
       />
-      {errors[name] && <ThemedText type="small">{errors[name]?.message}</ThemedText>}
     </ThemedView>
   );
 
@@ -105,25 +104,26 @@ function AuthForm({
         autoComplete: isSignUp ? 'new-password' : 'current-password',
       })}
 
-      {submitError && <ThemedText type="small">{submitError}</ThemedText>}
+      {submitError && (
+        <ThemedText type="small" themeColor="error">
+          {submitError}
+        </ThemedText>
+      )}
 
-      <Pressable
+      <Button
+        label={isSignUp ? 'Create account' : 'Log in'}
+        variant="primary"
         onPress={handleSubmit(onSubmit)}
         disabled={isSubmitting}
-        accessibilityRole="button"
-        accessibilityLabel={isSignUp ? 'Create account' : 'Log in'}
-      >
-        <ThemedView type="backgroundSelected" style={styles.submitButton}>
-          <ThemedText type="smallBold">{isSignUp ? 'Create account' : 'Log in'}</ThemedText>
-        </ThemedView>
-      </Pressable>
+      />
 
       <Pressable
         onPress={() => onSwitchMode(isSignUp ? 'login' : 'signup')}
         accessibilityRole="button"
         accessibilityLabel={isSignUp ? 'I already have an account' : 'Create a new account'}
+        style={styles.switch}
       >
-        <ThemedText type="link" style={styles.switch}>
+        <ThemedText type="link">
           {isSignUp ? 'Already have an account? Log in' : 'New here? Create an account'}
         </ThemedText>
       </Pressable>
@@ -139,19 +139,9 @@ const styles = StyleSheet.create({
   field: {
     gap: Spacing.one,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: Spacing.two,
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.two,
-    fontSize: 16,
-  },
-  submitButton: {
-    borderRadius: Spacing.three,
-    paddingVertical: Spacing.three,
-    alignItems: 'center',
-  },
   switch: {
-    textAlign: 'center',
+    minHeight: MinTouchSize,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

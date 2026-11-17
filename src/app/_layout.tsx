@@ -8,10 +8,39 @@ import { useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { persistOptions, queryClient } from '@/api/queryClient';
+import { Colors } from '@/constants/theme';
 import { AuthProvider, useAuth } from '@/hooks/use-auth';
 import { useAutoSync } from '@/offline/syncManager';
 
 SplashScreen.preventAutoHideAsync();
+
+// High-contrast navigation themes (design doc 5.1) so the header, back button
+// and card background match the app's own palette instead of RN Navigation's
+// defaults.
+const lightNavTheme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: Colors.light.primary,
+    background: Colors.light.background,
+    card: Colors.light.surface,
+    text: Colors.light.text,
+    border: Colors.light.border,
+    notification: Colors.light.error,
+  },
+};
+const darkNavTheme = {
+  ...DarkTheme,
+  colors: {
+    ...DarkTheme.colors,
+    primary: Colors.dark.primary,
+    background: Colors.dark.background,
+    card: Colors.dark.surface,
+    text: Colors.dark.text,
+    border: Colors.dark.border,
+    notification: Colors.dark.error,
+  },
+};
 
 function AppShell() {
   // Kicks off a sync pass on launch and whenever connectivity returns (NFR2).
@@ -60,7 +89,7 @@ export default function RootLayout() {
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
       <SafeAreaProvider>
-        <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+        <ThemeProvider value={colorScheme === 'dark' ? darkNavTheme : lightNavTheme}>
           <AuthProvider>
             <AppShell />
           </AuthProvider>

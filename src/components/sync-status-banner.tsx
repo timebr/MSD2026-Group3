@@ -1,8 +1,9 @@
 import { Pressable, StyleSheet } from 'react-native';
 
+import { StatusBadge } from '@/components/status-badge';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Spacing } from '@/constants/theme';
+import { MinTouchSize, Spacing } from '@/constants/theme';
 import { useSyncStatus } from '@/hooks/use-bookings';
 import { useIsOnline } from '@/offline/connectivity';
 import { requestSync } from '@/offline/syncManager';
@@ -24,13 +25,21 @@ export function SyncStatusBanner() {
       : `Syncing ${plural(pending)}…`;
 
   return (
-    <ThemedView type="backgroundElement" style={styles.banner}>
+    <ThemedView type="surface" style={styles.banner}>
+      <StatusBadge status={failed > 0 ? 'failed' : 'pending'} />
       <ThemedText type="small" style={styles.message}>
         {message}
       </ThemedText>
       {isOnline && failed > 0 && (
-        <Pressable onPress={() => requestSync()} accessibilityRole="button" accessibilityLabel="Retry sync">
-          <ThemedText type="smallBold">Retry</ThemedText>
+        <Pressable
+          onPress={() => requestSync()}
+          accessibilityRole="button"
+          accessibilityLabel="Retry sync"
+          style={styles.retry}
+        >
+          <ThemedText type="smallBold" themeColor="primary">
+            Retry
+          </ThemedText>
         </Pressable>
       )}
     </ThemedView>
@@ -47,5 +56,11 @@ const styles = StyleSheet.create({
   },
   message: {
     flex: 1,
+  },
+  retry: {
+    minHeight: MinTouchSize,
+    minWidth: MinTouchSize,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
