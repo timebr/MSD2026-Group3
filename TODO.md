@@ -7,6 +7,10 @@
 ## Documents
 ### Design Document
 - [ ] HiFi Figma (after app's finished)
-- [ ] Nav. Model 
+- [ ] Nav. Model
+- [ ] Format FR and NFR to fit into tables instead of raw text.
+- [ ] Ensure App reflects proposed changes by Usability Checks findings.
+- [ ] Surface Section.
+- [ ] Rework the complete layout.
 
 ### Implementation Document
