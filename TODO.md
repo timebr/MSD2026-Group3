@@ -14,3 +14,9 @@
 - [ ] Rework the complete layout.
 
 ### Implementation Document
+- [ ] Enrich the testing aspect and reflect it.
+- [ ] Document layout polishing.
+- [ ] Debugging report on a tedious issue.
+
+### Additional Notes
+- [ ] Redo and add demo video.
